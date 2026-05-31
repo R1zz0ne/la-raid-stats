@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "raids": [
+    {
+      "id": "ekidna",
+      "name": "Экидна",
+      "difficulties": [
+        {
+          "type": "solo",
+          "requiredGearScore": 1620,
+          "regularGold": 0,
+          "limitedGold": 9100
+        },
+        {
+          "type": "normal",
+          "requiredGearScore": 1620,
+          "regularGold": 4550,
+          "limitedGold": 4550
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1630,
+          "regularGold": 4900,
+          "limitedGold": 6300
+        }
+      ]
+    },
+    {
+      "id": "bekhemos",
+      "name": "Бехемос",
+      "difficulties": [
+        {
+          "type": "normal",
+          "requiredGearScore": 1620,
+          "regularGold": 4550,
+          "limitedGold": 4550
+        }
+      ]
+    },
+    {
+      "id": "egir",
+      "name": "Эгир",
+      "difficulties": [
+        {
+          "type": "solo",
+          "requiredGearScore": 1660,
+          "regularGold": 0,
+          "limitedGold": 16800
+        },
+        {
+          "type": "normal",
+          "requiredGearScore": 1660,
+          "regularGold": 8400,
+          "limitedGold": 8400
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1680,
+          "regularGold": 10500,
+          "limitedGold": 10500
+        }
+      ]
+    },
+    {
+      "id": "avrelsud",
+      "name": "Аврельсуд",
+      "difficulties": [
+        {
+          "type": "solo",
+          "requiredGearScore": 1670,
+          "regularGold": 0,
+          "limitedGold": 19250
+        },
+        {
+          "type": "normal",
+          "requiredGearScore": 1670,
+          "regularGold": 9625,
+          "limitedGold": 9625
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1690,
+          "regularGold": 11900,
+          "limitedGold": 11900
+        }
+      ]
+    },
+    {
+      "id": "mordrum",
+      "name": "Мордрум",
+      "difficulties": [
+        {
+          "type": "solo",
+          "requiredGearScore": 1680,
+          "regularGold": 0,
+          "limitedGold": 28000
+        },
+        {
+          "type": "normal",
+          "requiredGearScore": 1680,
+          "regularGold": 18600,
+          "limitedGold": 9400
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1700,
+          "regularGold": 26600,
+          "limitedGold": 11400
+        }
+      ]
+    },
+    {
+      "id": "armog",
+      "name": "Армог",
+      "difficulties": [
+        {
+          "type": "normal",
+          "requiredGearScore": 1700,
+          "regularGold": 33000,
+          "limitedGold": 0
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1720,
+          "regularGold": 42000,
+          "limitedGold": 0
+        }
+      ]
+    },
+    {
+      "id": "kazeros",
+      "name": "Казерос",
+      "difficulties": [
+        {
+          "type": "normal",
+          "requiredGearScore": 1710,
+          "regularGold": 40000,
+          "limitedGold": 0
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1730,
+          "regularGold": 52000,
+          "limitedGold": 0
+        }
+      ]
+    },
+    {
+      "id": "zerka",
+      "name": "Зерка",
+      "difficulties": [
+        {
+          "type": "normal",
+          "requiredGearScore": 1710,
+          "regularGold": 35000,
+          "limitedGold": 0
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1730,
+          "regularGold": 44000,
+          "limitedGold": 0
+        },
+        {
+          "type": "nightmare",
+          "requiredGearScore": 1740,
+          "regularGold": 54000,
+          "limitedGold": 0
+        }
+      ]
+    }
+  ]
+}

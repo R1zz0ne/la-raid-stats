@@ -1,0 +1,106 @@
+// Lost Ark Raid Tracker - CSS Variables for Themes
+// =============================================
+
+// Light theme (default)
+:root {
+  // Colors
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-hover: #f1f5f9;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #dbeafe;
+  --color-secondary: #64748b;
+  --color-danger: #e57373;
+  --color-danger-hover: #c62828;
+  --color-success: #22c55e;
+  --color-warning: #d97706;
+  --color-border: #e2e8f0;
+  --color-border-focus: #3b82f6;
+  --color-checkbox-border: #94a3b8;
+
+  // Difficulty colors
+  --color-difficulty-solo-bg: #bbf7d0;
+  --color-difficulty-solo-text: #15803d;
+  --color-difficulty-normal-bg: #bfdbfe;
+  --color-difficulty-normal-text: #1e40af;
+  --color-difficulty-heroic-bg: #fef08a;
+  --color-difficulty-heroic-text: #a16207;
+  --color-difficulty-nightmare-bg: #e9d5ff;
+  --color-difficulty-nightmare-text: #5b21b6;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+  // Spacing
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  // Border radius
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  // Typography
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter', var(--font-sans);
+
+  // Font sizes
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  // Transitions
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+// Dark theme
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-hover: #334155;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #1e3a5f;
+  --color-secondary: #94a3b8;
+  --color-danger: #f87171;
+  --color-danger-hover: #fca5a5;
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-border: #334155;
+  --color-border-focus: #60a5fa;
+  --color-checkbox-border: #475569;
+
+  // Difficulty colors (darker for dark theme for better text contrast)
+  --color-difficulty-solo-bg: #166534;
+  --color-difficulty-solo-text: #bbf7d0;
+  --color-difficulty-normal-bg: #1e40af;
+  --color-difficulty-normal-text: #bfdbfe;
+  --color-difficulty-heroic-bg: #854d0e;
+  --color-difficulty-heroic-text: #fef08a;
+  --color-difficulty-nightmare-bg: #5b21b6;
+  --color-difficulty-nightmare-text: #e9d5ff;
+
+  // Shadows (subtle in dark)
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+}
