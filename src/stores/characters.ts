@@ -198,6 +198,19 @@ export const useCharactersStore = defineStore('characters', () => {
     persistCharacterRaidsToStorage()
   }
 
+  function resetAllRaidsCompleted(): void {
+    let hasChanges = false
+    for (const cr of _characterRaids) {
+      if (cr.isCompleted) {
+        cr.isCompleted = false
+        hasChanges = true
+      }
+    }
+    if (hasChanges) {
+      persistCharacterRaidsToStorage()
+    }
+  }
+
   function reorderCharacters(newOrder: Character[]): void {
     // Update order for all characters
     newOrder.forEach((char, index) => {
@@ -300,6 +313,7 @@ export const useCharactersStore = defineStore('characters', () => {
     updateCharacterRaid,
     deleteCharacterRaid,
     toggleRaidCompleted,
+    resetAllRaidsCompleted,
     reorderCharacters,
     loadFromStorage,
     importData,

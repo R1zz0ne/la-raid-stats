@@ -160,9 +160,36 @@ export function validateImportData(data: unknown): { valid: boolean; errors: str
 ### characterClasses.ts
 ```typescript
 export const CHARACTER_CLASSES = [
-  { value: 'berserker', label: 'Берсеркер' },
-  { value: 'destroyer', label: 'Разрушитель' },
-  // ... все 17 + custom
+  { value: 'berserker', label: 'Берсерк' },
+  { value: 'destroyer', label: 'Сокрушитель' },
+  { value: 'warden', label: 'Страж' },
+  { value: 'paladin', label: 'Паладин' },
+  { value: 'valkyrie', label: 'Валькирия' },
+  { value: 'sentinel', label: 'Храмовница' },
+  { value: 'arcanist', label: 'Арканолог' },
+  { value: 'summoner', label: 'Призывательница' },
+  { value: 'bard', label: 'Менестрель' },
+  { value: 'sorceress', label: 'Чародейка' },
+  { value: 'avatar', label: 'Аватар' },
+  { value: 'duelist', label: 'Дуалист' },
+  { value: 'keymaster', label: 'Ки-мастер' },
+  { value: 'spearmaster', label: 'Мастер копья' },
+  { value: 'tycoon', label: 'Тайгон' },
+  { value: 'steelknuckle', label: 'Стальной кулак' },
+  { value: 'ranger', label: 'Рейнджер' },
+  { value: 'demonhunter', label: 'Охотник на демонов' },
+  { value: 'mechanist', label: 'Механист' },
+  { value: 'agent', label: 'Агент С.К.А.У.Т' },
+  { value: 'demonhunteR', label: 'Охотница на демонов' },
+  { value: 'bladeofdeath', label: 'Клинок смерти' },
+  { value: 'fury', label: 'Фурия' },
+  { value: 'reaper', label: 'Жнец' },
+  { value: 'soul devourer', label: 'Пожирательница душ' },
+  { value: 'artist', label: 'Художница' },
+  { value: 'aeromancer', label: 'Аэромант' },
+  { value: 'druid', label: 'Друид' },
+  { value: 'wardenknight', label: 'Рыцарь-Хранитель' },
+  { value: 'custom', label: 'Свой вариант' },
 ] as const
 
 export type CharacterClassValue = typeof CHARACTER_CLASSES[number]['value']
