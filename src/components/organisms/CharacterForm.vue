@@ -145,21 +145,21 @@ function handleCancel() {
       />
 
       <BaseInput
-        v-model="gearScoreStr"
-        type="number"
-        min="0"
-        placeholder="Например: 1700"
-        label="ГС (Уровень персонажа)"
-        id="character-gs"
-      />
-
-      <BaseInput
         v-if="showCustomClassName"
         v-model="customClassName"
         type="text"
         placeholder="Введите название класса"
         label="Название класса"
         id="custom-class-name"
+      />
+
+      <BaseInput
+        v-model="gearScoreStr"
+        type="number"
+        min="0"
+        placeholder="Например: 1700"
+        label="ГС (Уровень персонажа)"
+        id="character-gs"
       />
     </div>
 

@@ -82,19 +82,33 @@ function handleToggleRaid(raidId: string) {
 function handleRemoveRaid(raidId: string) {
   charactersStore.deleteCharacterRaid(raidId)
 }
+
+function handleResetAllRaids() {
+  if (confirm('Сбросить все чек-боксы рейдов? Все отмеченные рейды будут сняты.')) {
+    charactersStore.resetAllRaidsCompleted()
+  }
+}
 </script>
 
 <template>
   <div class="dashboard-view">
     <div class="dashboard-view__header">
       <h1>Персонажи</h1>
-      <button
-        class="dashboard-view__edit-toggle"
-        :class="{ 'dashboard-view__edit-toggle--active': isEditingMode }"
-        @click="isEditingMode = !isEditingMode"
-      >
-        {{ isEditingMode ? '✓ Режим редактирования' : 'Редактировать порядок' }}
-      </button>
+      <div class="dashboard-view__header-actions">
+        <button
+          class="dashboard-view__reset-toggle"
+          @click="handleResetAllRaids"
+        >
+          Недельный сброс
+        </button>
+        <button
+          class="dashboard-view__edit-toggle"
+          :class="{ 'dashboard-view__edit-toggle--active': isEditingMode }"
+          @click="isEditingMode = !isEditingMode"
+        >
+          {{ isEditingMode ? '✓ Режим редактирования' : 'Редактировать порядок' }}
+        </button>
+      </div>
     </div>
 
     <CharacterList
@@ -170,6 +184,26 @@ function handleRemoveRaid(raidId: string) {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+}
+
+.dashboard-view__header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.dashboard-view__reset-toggle {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-view__reset-toggle:hover {
+  background-color: var(--color-surface-hover);
 }
 
 /* Modal styles */
