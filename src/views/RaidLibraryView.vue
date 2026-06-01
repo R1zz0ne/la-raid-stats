@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Raid, DifficultyFormData } from '@/types'
 import { useRaidsStore } from '@/stores/raids'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
@@ -12,6 +12,15 @@ const raidsStore = useRaidsStore()
 // Form state
 const showRaidForm = ref(false)
 const editingRaid = ref<Raid | undefined>()
+
+// Lock body scroll when modal is open
+watch(showRaidForm, (isOpen) => {
+  if (isOpen) {
+    document.body.classList.add('body-no-scroll')
+  } else {
+    document.body.classList.remove('body-no-scroll')
+  }
+}, { immediate: true })
 
 // Modal close guard to prevent closing when selecting text
 const { onOverlayClick: onRaidFormClick } = useModalCloseGuard(handleCancelForm)

@@ -48,6 +48,7 @@ export interface Character {
   characterClass: CharacterClass
   customClassName?: string // used when characterClass === 'custom'
   order: number // for drag-and-drop sorting
+  isGoldRecipient?: boolean // whether this character receives gold
 }
 
 // Difficulty configuration for a raid

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Character, CharacterFormData } from '@/types'
 import { useCharactersStore } from '@/stores/characters'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
 import CharacterList from '@/components/organisms/CharacterList.vue'
 import CharacterForm from '@/components/organisms/CharacterForm.vue'
 import RaidAssignmentModal from '@/components/organisms/RaidAssignmentModal.vue'
+import GoldProgress from '@/components/molecules/GoldProgress.vue'
 
 const charactersStore = useCharactersStore()
 
@@ -21,7 +22,14 @@ const selectedCharacter = ref<Character | null>(null)
 // Modal close guard to prevent closing when selecting text
 const { onOverlayClick: onCharacterFormClick } = useModalCloseGuard(handleCancelForm)
 
-
+// Lock body scroll when any modal is open
+watch([showCharacterForm, showRaidModal], ([formOpen, raidOpen]) => {
+  if (formOpen || raidOpen) {
+    document.body.classList.add('body-no-scroll')
+  } else {
+    document.body.classList.remove('body-no-scroll')
+  }
+}, { immediate: true })
 
 // Handlers
 const existingNames = computed(() => charactersStore.characters.map(c => c.name))
@@ -83,6 +91,10 @@ function handleRemoveRaid(raidId: string) {
   charactersStore.deleteCharacterRaid(raidId)
 }
 
+function handleToggleGoldRecipient(characterId: string) {
+  charactersStore.toggleGoldRecipient(characterId)
+}
+
 function handleResetAllRaids() {
   if (confirm('Сбросить все чек-боксы рейдов? Все отмеченные рейды будут сняты.')) {
     charactersStore.resetAllRaidsCompleted()
@@ -93,7 +105,7 @@ function handleResetAllRaids() {
 <template>
   <div class="dashboard-view">
     <div class="dashboard-view__header">
-      <h1>Персонажи</h1>
+      <h1>Персонажи ({{ charactersStore.characters.length }})</h1>
       <div class="dashboard-view__header-actions">
         <button
           class="dashboard-view__reset-toggle"
@@ -108,8 +120,16 @@ function handleResetAllRaids() {
         >
           {{ isEditingMode ? '✓ Режим редактирования' : 'Редактировать порядок' }}
         </button>
+        <button
+          class="dashboard-view__add-toggle"
+          @click="handleAddCharacter"
+        >
+          + Добавить персонажа
+        </button>
       </div>
     </div>
+
+    <GoldProgress />
 
     <CharacterList
       :characters="charactersStore.sortedCharacters"
@@ -120,6 +140,7 @@ function handleResetAllRaids() {
       @add-raid="handleAddRaid"
       @toggle-raid="handleToggleRaid"
       @remove-raid="handleRemoveRaid"
+      @toggle-gold-recipient="handleToggleGoldRecipient"
     />
 
     <!-- Character Form Modal -->
@@ -184,6 +205,22 @@ function handleResetAllRaids() {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+}
+
+.dashboard-view__add-toggle {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-view__add-toggle:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .dashboard-view__header-actions {

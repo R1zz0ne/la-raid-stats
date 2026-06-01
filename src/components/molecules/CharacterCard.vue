@@ -3,9 +3,11 @@ import { computed } from 'vue'
 import type { Character, CharacterRaid, GoldSummary, Raid } from '@/types'
 import { getClassLabel } from '@/constants/characterClasses'
 import BaseButton from '@/components/atoms/BaseButton.vue'
+import BaseCheckbox from '@/components/atoms/BaseCheckbox.vue'
 import GoldSummaryCard from '@/components/molecules/GoldSummary.vue'
 import RaidItem from '@/components/molecules/RaidItem.vue'
 import { useRaidsStore } from '@/stores/raids'
+import { useCharactersStore } from '@/stores/characters'
 
 const props = defineProps<{
   character: Character
@@ -21,12 +23,14 @@ const emit = defineEmits<{
   addRaid: [id: string]
   toggleRaid: [raidId: string]
   removeRaid: [raidId: string]
+  toggleGoldRecipient: [id: string]
   dragStart: [event: DragEvent, index: number]
   dragOver: [event: DragEvent, index: number]
   drop: [event: DragEvent, index: number]
 }>()
 
 const raidsStore = useRaidsStore()
+const charactersStore = useCharactersStore()
 
 const displayClass = computed(() => {
   if (props.character.characterClass === 'custom' && props.character.customClassName) {
@@ -47,12 +51,26 @@ const sortedRaids = computed(() => {
     return indexB - indexA // Newest raid first (reverse of library order)
   })
 })
+
+const isGoldRecipient = computed({
+  get: () => props.character.isGoldRecipient ?? false,
+  set: (value: boolean) => {
+    if (!value && props.character.isGoldRecipient) {
+      emit('toggleGoldRecipient', props.character.id)
+    } else if (value && !props.character.isGoldRecipient && charactersStore.goldRecipientCount() < 6) {
+      emit('toggleGoldRecipient', props.character.id)
+    }
+  }
+})
 </script>
 
 <template>
   <div
     class="character-card"
-    :class="{ 'character-card--editing': editing }"
+    :class="{
+      'character-card--editing': editing,
+      'character-card--gold-recipient': isGoldRecipient
+    }"
     :draggable="draggable"
     @dragstart="emit('dragStart', $event, 0)"
     @dragover="emit('dragOver', $event, 0)"
@@ -63,8 +81,15 @@ const sortedRaids = computed(() => {
         <div class="character-card__identity">
           <span class="character-card__name">{{ character.name }}</span>
           <span class="character-card__class">{{ displayClass }}</span>
-        </div>
-        <div class="character-card__stats">
+          <!-- Gold recipient toggle - only in edit mode -->
+          <div v-if="editing" class="character-card__gold-checkbox">
+            <BaseCheckbox
+              v-model="isGoldRecipient"
+              label="Получатель золота"
+              :disabled="!isGoldRecipient && charactersStore.goldRecipientCount() >= 6"
+            />
+          </div>
+          
           <span class="character-card__gs">ГС: {{ character.gearScore.toLocaleString('ru-RU') }}</span>
         </div>
       </div>
@@ -86,9 +111,6 @@ const sortedRaids = computed(() => {
       >
         + Рейд
       </BaseButton>
-      <div v-else class="character-card__raid-limit">
-        <span>3/3 рейдов</span>
-      </div>
     </div>
 
     <div class="character-card__raids">
@@ -110,7 +132,7 @@ const sortedRaids = computed(() => {
       </div>
     </div>
 
-    <div class="character-card__footer">
+    <div v-if="isGoldRecipient" class="character-card__footer">
       <GoldSummaryCard
         :regular="goldSummary.regular"
         :limited="goldSummary.limited"
@@ -129,6 +151,11 @@ const sortedRaids = computed(() => {
   flex-direction: column;
   gap: var(--spacing-md);
   transition: all var(--transition-fast);
+}
+
+.character-card--gold-recipient {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 1px var(--color-gold);
 }
 
 .character-card--editing {
@@ -172,6 +199,10 @@ const sortedRaids = computed(() => {
   border-radius: var(--radius-sm);
 }
 
+.character-card__gold-checkbox {
+  flex-shrink: 0;
+}
+
 .character-card__stats {
   margin-top: var(--spacing-xs);
 }
@@ -185,12 +216,6 @@ const sortedRaids = computed(() => {
 .character-card__actions {
   display: flex;
   gap: var(--spacing-sm);
-}
-
-.character-card__raid-limit {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  padding: var(--spacing-sm);
 }
 
 .character-card__raids {
