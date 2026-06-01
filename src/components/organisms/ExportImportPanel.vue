@@ -4,8 +4,9 @@ import { useCharactersStore } from '@/stores/characters'
 import { useRaidsStore } from '@/stores/raids'
 import { useSettingsStore } from '@/stores/settings'
 import { validateImportData } from '@/utils/validators'
-import type { ExportData } from '@/types'
+import type { ExportData, ImportScope } from '@/types'
 import BaseButton from '@/components/atoms/BaseButton.vue'
+import ImportOptionsModal from '@/components/organisms/ImportOptionsModal.vue'
 
 const emit = defineEmits<{
   export: []
@@ -19,6 +20,8 @@ const settingsStore = useSettingsStore()
 const isExporting = ref(false)
 const isImporting = ref(false)
 const importError = ref('')
+const showImportModal = ref(false)
+const pendingImportData = ref<ExportData | null>(null)
 
 // Export data
 async function handleExport() {
@@ -63,7 +66,6 @@ async function handleImport() {
     const file = (event.target as HTMLInputElement).files?.[0]
     if (!file) return
 
-    isImporting.value = true
     importError.value = ''
 
     try {
@@ -77,43 +79,71 @@ async function handleImport() {
         return
       }
 
-      // Confirm
-      if (!confirm('Текущие данные будут заменены. Продолжить?')) {
-        return
-      }
-
-      // Create backup first
-      const backupKey = 'la-raid-stats-backup'
-      const backupData: ExportData = {
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        characters: [...charactersStore.characters],
-        characterRaids: [...charactersStore.characterRaids],
-        raids: [...raidsStore.raids],
-        settings: { theme: settingsStore.theme },
-      }
-      localStorage.setItem(backupKey, JSON.stringify(backupData))
-
-      // Import
-      charactersStore.importData({
-        characters: data.characters,
-        characterRaids: data.characterRaids,
-      })
-      raidsStore.importData({ raids: data.raids })
-
-      if (data.settings?.theme) {
-        settingsStore.setTheme(data.settings.theme)
-      }
-
-      emit('import')
+      // Store data and show modal
+      pendingImportData.value = data
+      showImportModal.value = true
     } catch (err) {
       importError.value = 'Не удалось прочитать файл'
-    } finally {
-      isImporting.value = false
     }
   }
 
   input.click()
+}
+
+// Execute import after modal confirmation
+function executeImport(scope: ImportScope) {
+  const data = pendingImportData.value
+  if (!data) return
+
+  isImporting.value = true
+  showImportModal.value = false
+
+  try {
+    // Create backup first
+    const backupKey = 'la-raid-stats-backup'
+    const backupData: ExportData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      characters: [...charactersStore.characters],
+      characterRaids: [...charactersStore.characterRaids],
+      raids: [...raidsStore.raids],
+      settings: { theme: settingsStore.theme },
+    }
+    localStorage.setItem(backupKey, JSON.stringify(backupData))
+
+    // Import based on selected scope
+    if (scope === 'all' || scope === 'characters') {
+      // Get allowed raid IDs: from imported raids if importing all, or from current raids
+      const allowedRaidIds = scope === 'all'
+        ? new Set(data.raids.map(r => r.id))
+        : new Set(raidsStore.raids.map(r => r.id))
+
+      charactersStore.importData({
+        characters: data.characters,
+        characterRaids: data.characterRaids,
+      }, allowedRaidIds)
+    }
+
+    if (scope === 'all' || scope === 'raids') {
+      raidsStore.importData({ raids: data.raids })
+    }
+
+    if (data.settings?.theme) {
+      settingsStore.setTheme(data.settings.theme)
+    }
+
+    emit('import')
+    pendingImportData.value = null
+  } catch (err) {
+    importError.value = 'Ошибка при импорте данных'
+  } finally {
+    isImporting.value = false
+  }
+}
+
+function closeImportModal() {
+  showImportModal.value = false
+  pendingImportData.value = null
 }
 </script>
 
@@ -142,7 +172,7 @@ async function handleImport() {
         <div class="export-import-panel__action-info">
           <span class="export-import-panel__action-label">Импорт</span>
           <span class="export-import-panel__action-desc">
-            Загрузит данные из JSON-файла (заменит текущие)
+            Загрузит данные из JSON-файла
           </span>
         </div>
         <BaseButton
@@ -158,6 +188,15 @@ async function handleImport() {
     <div v-if="importError" class="export-import-panel__error">
       {{ importError }}
     </div>
+
+    <!-- Import Options Modal -->
+    <ImportOptionsModal
+      v-if="showImportModal && pendingImportData"
+      :character-count="pendingImportData.characters.length"
+      :raid-count="pendingImportData.raids.length"
+      @close="closeImportModal"
+      @confirm="executeImport"
+    />
   </div>
 </template>
 

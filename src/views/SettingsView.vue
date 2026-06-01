@@ -48,7 +48,7 @@ const isDark = computed(() => settingsStore.isDark)
         <div class="settings-view__info">
           <p><strong>Lost Ark Raid Tracker</strong></p>
           <p>Версия: 1.0.0</p>
-          <p>Frontend-приложение для учёта пройденных рейдов и полученного золота в Lost Ark.</p>
+          <p>Приложение для учёта пройденных рейдов и полученного золота в Lost Ark.</p>
           <p class="settings-view__info-note">
             Все данные хранятся локально в браузере. Для резервного копирования используйте экспорт.
           </p>
