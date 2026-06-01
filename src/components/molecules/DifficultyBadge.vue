@@ -53,7 +53,8 @@ const badgeStyle = computed(() => {
 .difficulty-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--spacing-sm);
+  justify-content: center;
+  padding: 3px var(--spacing-sm);
   background-color: var(--badge-bg);
   color: var(--badge-text);
   font-size: var(--text-xs);
@@ -61,5 +62,8 @@ const badgeStyle = computed(() => {
   border-radius: var(--radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.2;
+  min-height: 18px;
+  box-sizing: border-box;
 }
 </style>

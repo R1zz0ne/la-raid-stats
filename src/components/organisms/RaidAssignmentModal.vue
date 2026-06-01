@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+/**
+ * RaidAssignmentModal
+ * 
+ * Modal for assigning raids to a character.
+ * Allows selecting one difficulty per raid from available options.
+ * 
+ * Features:
+ * - Compact chip-based difficulty selection
+ * - Uses useRaidSelection composable for state management
+ * - Uses RaidDifficultyChip component for compact display
+ */
+import { computed, onMounted, onUnmounted } from 'vue'
 import type { Character, Raid, DifficultyType } from '@/types'
 import { useCharactersStore } from '@/stores/characters'
 import { useRaidsStore } from '@/stores/raids'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
+import { useRaidSelection } from '@/composables/useRaidSelection'
 import BaseButton from '@/components/atoms/BaseButton.vue'
-import DifficultyBadge from '@/components/molecules/DifficultyBadge.vue'
+import RaidDifficultyChip from '@/components/atoms/RaidDifficultyChip.vue'
 
 const props = defineProps<{
   character: Character | null
@@ -18,10 +30,26 @@ const emit = defineEmits<{
 const charactersStore = useCharactersStore()
 const raidsStore = useRaidsStore()
 
-// Modal close guard to prevent closing when selecting text
+// Modal close guard
 const { onOverlayClick } = useModalCloseGuard(() => emit('close'))
 
+// Lock body scroll
+onMounted(() => {
+  document.body.classList.add('body-no-scroll')
+})
 
+onUnmounted(() => {
+  document.body.classList.remove('body-no-scroll')
+})
+
+// Raid selection state
+const {
+  selectedRaids,
+  selectedCount,
+  isSelected,
+  toggleSelection,
+  clearSelection,
+} = useRaidSelection()
 
 // Get already assigned raid IDs for this character
 const assignedRaidIds = computed(() => {
@@ -32,37 +60,67 @@ const assignedRaidIds = computed(() => {
   )
 })
 
-// Available raids: 
-// 1. Character GS >= min difficulty required GS
-// 2. Not already assigned
+// Available raids: filtered by GS, sorted (newest first)
 const availableRaids = computed(() => {
   if (!props.character) return []
 
-  return raidsStore.raids.filter(raid => {
-    // Skip if already assigned
+  return [...raidsStore.raids].reverse().filter(raid => {
     if (assignedRaidIds.value.has(raid.id)) return false
-    
-    // Raid must have at least one difficulty with requiredGearScore <= character GS
     return raid.difficulties.some(d => d.requiredGearScore <= props.character!.gearScore)
   })
 })
 
-// Get available difficulties for a raid (filtered by GS)
+// Get difficulty order for sorting
+function getDifficultyOrder(type: DifficultyType): number {
+  const orderMap: Record<DifficultyType, number> = {
+    nightmare: 1,
+    heroic: 2,
+    normal: 3,
+    solo: 4,
+  }
+  return orderMap[type] ?? 99
+}
+
+// Get available difficulties for a raid (sorted by gold desc then difficulty desc)
 function getAvailableDifficulties(raid: Raid) {
   if (!props.character) return []
   return raid.difficulties
     .filter(d => d.requiredGearScore <= props.character!.gearScore)
-    .sort((a, b) => a.requiredGearScore - b.requiredGearScore)
+    .sort((a, b) => {
+      const goldA = a.regularGold + a.limitedGold
+      const goldB = b.regularGold + b.limitedGold
+
+      if (goldB !== goldA) {
+        return goldB - goldA
+      }
+
+      return getDifficultyOrder(a.type) - getDifficultyOrder(b.type)
+    })
 }
 
-function assignRaid(raidId: string, difficultyType: DifficultyType) {
+// Check if a raid has any selection
+function hasSelection(raidId: string): boolean {
+  return selectedRaids.value.some(r => r.raidId === raidId)
+}
+
+// Confirm and assign all selected raids
+function confirmSelection() {
   if (!props.character) return
 
-  charactersStore.addCharacterRaid({
-    characterId: props.character.id,
-    raidId,
-    difficultyType,
-  })
+  for (const selection of selectedRaids.value) {
+    charactersStore.addCharacterRaid({
+      characterId: props.character.id,
+      raidId: selection.raidId,
+      difficultyType: selection.difficultyType,
+    })
+  }
+
+  emit('close')
+}
+
+// Reset selection when modal closes
+function handleClose() {
+  clearSelection()
   emit('close')
 }
 </script>
@@ -70,40 +128,43 @@ function assignRaid(raidId: string, difficultyType: DifficultyType) {
 <template>
   <Teleport to="body">
     <div v-if="character" class="modal-overlay" @click="onOverlayClick">
-      <div class="modal-content" ref="modalContentRef">
+      <div class="modal-content" @click.stop>
         <div class="raid-assignment">
-          <h3 class="raid-assignment__title">
-            Выберите рейд для {{ character.name }}
-          </h3>
-          <p class="raid-assignment__gs">
-            ГС персонажа: {{ character.gearScore }}
-          </p>
+          <header class="raid-assignment__header">
+            <h3 class="raid-assignment__title">
+              Выберите рейд для {{ character.name }}
+            </h3>
+            <span class="raid-assignment__gs">
+              ГС: {{ character.gearScore.toLocaleString('ru-RU') }}
+            </span>
+          </header>
 
-          <div v-if="availableRaids.length > 0" class="raid-assignment__list">
-            <div
-              v-for="raid in [...availableRaids].reverse()"
-              :key="raid.id"
-              class="raid-assignment__raid"
-            >
-              <div class="raid-assignment__raid-header">
-                <span class="raid-assignment__raid-name">{{ raid.name }}</span>
-              </div>
-              
-              <div class="raid-assignment__difficulties">
-                <div
-                  v-for="diff in getAvailableDifficulties(raid)"
-                  :key="diff.type"
-                  class="raid-assignment__difficulty"
-                  @click="assignRaid(raid.id, diff.type)"
-                >
-                  <DifficultyBadge :type="diff.type" />
-                  <span class="raid-assignment__dif-gs">ГС: {{ diff.requiredGearScore }}</span>
-                  <span v-if="diff.regularGold > 0" class="raid-assignment__dif-gold">
-                    💰 {{ diff.regularGold }}
+          <div v-if="availableRaids.length > 0" class="raid-assignment__scroll">
+            <div class="raid-assignment__list">
+              <div
+                v-for="raid in availableRaids"
+                :key="raid.id"
+                class="raid-assignment__raid"
+                :class="{ 'raid-assignment__raid--selected': hasSelection(raid.id) }"
+              >
+                <div class="raid-assignment__raid-header">
+                  <span class="raid-assignment__raid-name">{{ raid.name }}</span>
+                  <span 
+                    v-if="hasSelection(raid.id)" 
+                    class="raid-assignment__selected-badge"
+                  >
+                    ✓
                   </span>
-                  <span v-if="diff.limitedGold > 0" class="raid-assignment__dif-gold">
-                    ✨ {{ diff.limitedGold }}
-                  </span>
+                </div>
+
+                <div class="raid-assignment__difficulties">
+                  <RaidDifficultyChip
+                    v-for="diff in getAvailableDifficulties(raid)"
+                    :key="diff.type"
+                    :difficulty="diff"
+                    :is-selected="isSelected(raid.id, diff.type)"
+                    @select="toggleSelection(raid.id, diff.type)"
+                  />
                 </div>
               </div>
             </div>
@@ -117,11 +178,26 @@ function assignRaid(raidId: string, difficultyType: DifficultyType) {
             </p>
           </div>
 
-          <div class="raid-assignment__actions">
-            <BaseButton variant="secondary" @click="emit('close')">
+          <footer class="raid-assignment__actions">
+            <span v-if="selectedCount > 0" class="raid-assignment__selected-info">
+              Выбрано: {{ selectedCount }}
+            </span>
+            <BaseButton
+              variant="secondary"
+              size="sm"
+              @click="handleClose"
+            >
               Отмена
             </BaseButton>
-          </div>
+            <BaseButton
+              variant="primary"
+              size="sm"
+              :disabled="selectedCount === 0"
+              @click="confirmSelection"
+            >
+              Добавить ({{ selectedCount }})
+            </BaseButton>
+          </footer>
         </div>
       </div>
     </div>
@@ -142,20 +218,10 @@ function assignRaid(raidId: string, difficultyType: DifficultyType) {
 
 .modal-content {
   width: 100%;
-  max-width: 600px;
+  max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp var(--transition-normal) ease-out;
-}
-
-.raid-assignment {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
 }
 
 @keyframes slideUp {
@@ -169,32 +235,62 @@ function assignRaid(raidId: string, difficultyType: DifficultyType) {
   }
 }
 
+.raid-assignment {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.raid-assignment__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .raid-assignment__title {
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 600;
   margin: 0;
 }
 
 .raid-assignment__gs {
+  font-size: var(--text-sm);
   color: var(--color-primary);
   font-weight: 500;
-  margin: 0;
 }
 
 .raid-assignment__list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
+}
+
+.raid-assignment__scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
 }
 
 .raid-assignment__raid {
   background-color: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
+  transition: border-color var(--transition-fast);
+}
+
+.raid-assignment__raid--selected {
+  border-color: var(--color-primary);
 }
 
 .raid-assignment__raid-header {
@@ -204,60 +300,52 @@ function assignRaid(raidId: string, difficultyType: DifficultyType) {
 }
 
 .raid-assignment__raid-name {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text);
+}
+
+.raid-assignment__selected-badge {
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 2px var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
 }
 
 .raid-assignment__difficulties {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.raid-assignment__difficulty {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-surface-hover);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.raid-assignment__difficulty:hover {
-  background-color: var(--color-primary-light);
-  border-color: var(--color-primary);
-}
-
-.raid-assignment__dif-gs {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-.raid-assignment__dif-gold {
-  font-size: var(--text-xs);
-  color: var(--color-warning);
+  gap: var(--spacing-xs);
 }
 
 .raid-assignment__empty {
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
   color: var(--color-text-muted);
+  font-size: var(--text-sm);
 }
 
 .raid-assignment__empty-hint {
-  font-size: var(--text-sm);
-  margin-top: var(--spacing-sm);
+  font-size: var(--text-xs);
+  margin-top: var(--spacing-xs);
+  line-height: 1.5;
 }
 
 .raid-assignment__actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: var(--spacing-sm);
-  padding-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
   border-top: 1px solid var(--color-border);
+}
+
+.raid-assignment__selected-info {
+  margin-right: auto;
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  font-weight: 500;
 }
 </style>

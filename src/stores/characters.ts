@@ -77,6 +77,11 @@ export const useCharactersStore = defineStore('characters', () => {
     return _characters.length < MAX_CHARACTERS
   })
 
+  // Count gold recipients
+  function goldRecipientCount(): number {
+    return _characters.filter(c => c.isGoldRecipient).length
+  }
+
   // Actions
   function addCharacter(data: CharacterFormData): Character | null {
     if (!canAddCharacter.value) {
@@ -95,6 +100,8 @@ export const useCharactersStore = defineStore('characters', () => {
       characterClass: data.characterClass,
       customClassName: data.customClassName,
       order: _characters.length,
+      // Auto-set gold recipient if less than 6 recipients exist
+      isGoldRecipient: goldRecipientCount() < 6,
     }
 
     _characters.push(character)
@@ -103,7 +110,16 @@ export const useCharactersStore = defineStore('characters', () => {
     return character
   }
 
-  function updateCharacter(id: string, data: Partial<Pick<Character, 'gearScore' | 'characterClass' | 'customClassName'>>): void {
+  // Toggle gold recipient status
+  function toggleGoldRecipient(id: string): void {
+    const index = _characters.findIndex(c => c.id === id)
+    if (index === -1) return
+
+    _characters[index].isGoldRecipient = !_characters[index].isGoldRecipient
+    persistToStorage()
+  }
+
+  function updateCharacter(id: string, data: Partial<Pick<Character, 'gearScore' | 'characterClass' | 'customClassName' | 'isGoldRecipient'>>): void {
     const index = _characters.findIndex(c => c.id === id)
     if (index === -1) return
 
@@ -119,6 +135,10 @@ export const useCharactersStore = defineStore('characters', () => {
 
     if (data.customClassName !== undefined) {
       character.customClassName = data.customClassName
+    }
+
+    if (data.isGoldRecipient !== undefined) {
+      character.isGoldRecipient = data.isGoldRecipient
     }
 
     persistToStorage()
@@ -302,10 +322,12 @@ export const useCharactersStore = defineStore('characters', () => {
     characterRaids: _characterRaids,
     sortedCharacters,
     canAddCharacter,
+    goldRecipientCount,
     getCharacterById,
     getRaidsForCharacter,
     getGoldSummary,
     isCharacterGearScoreEnough,
+    toggleGoldRecipient,
     addCharacter,
     updateCharacter,
     deleteCharacter,

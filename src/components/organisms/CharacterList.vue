@@ -18,6 +18,7 @@ const emit = defineEmits<{
   addRaid: [characterId: string]
   toggleRaid: [raidId: string]
   removeRaid: [raidId: string]
+  toggleGoldRecipient: [id: string]
 }>()
 
 const charactersStore = useCharactersStore()
@@ -57,45 +58,79 @@ function onDragOver(event: DragEvent, index: number) {
 function onDrop(event: DragEvent, index: number) {
   handleDrop(event, index)
 }
+
+// Computed properties for gold recipients and other characters
+const goldRecipients = computed(() => {
+  return props.characters.filter(c => c.isGoldRecipient)
+})
+
+const otherCharacters = computed(() => {
+  return props.characters.filter(c => !c.isGoldRecipient)
+})
 </script>
 
 <template>
   <div class="character-list">
-    <div class="character-list__header">
-      <h2>Персонажи ({{ characters.length }})</h2>
-      <BaseButton
-        v-if="charactersStore.canAddCharacter"
-        variant="primary"
-        @click="emit('addCharacter')"
+    <!-- Gold Recipients Section -->
+    <div v-if="goldRecipients.length > 0" class="character-list__section">
+      <div class="character-list__section-header">
+        <h3>Получатели золота</h3>
+        <span class="character-list__section-badge">{{ goldRecipients.length }}/6</span>
+      </div>
+      <div
+        class="character-list__grid"
+        :class="{ 'character-list__grid--editing': editing, 'character-list__grid--dragging': isDragging }"
       >
-        + Добавить персонажа
-      </BaseButton>
-      <span v-else class="character-list__limit">
-        Достигнут лимит ({{ characters.length }}/30)
-      </span>
+        <CharacterCard
+          v-for="(character, index) in goldRecipients"
+          :key="character.id"
+          :character="character"
+          :raids="getRaidsForCharacter(character.id)"
+          :gold-summary="getGoldSummary(character.id)"
+          :editing="editing"
+          :draggable="editing"
+          @edit="emit('editCharacter', $event)"
+          @delete="emit('deleteCharacter', $event)"
+          @add-raid="emit('addRaid', $event)"
+          @toggle-raid="emit('toggleRaid', $event)"
+          @remove-raid="emit('removeRaid', $event)"
+          @toggle-gold-recipient="emit('toggleGoldRecipient', $event)"
+          @drag-start="onDragStart($event, index)"
+          @drag-over="onDragOver($event, index)"
+          @drop="onDrop($event, index)"
+        />
+      </div>
     </div>
 
-    <div
-      class="character-list__grid"
-      :class="{ 'character-list__grid--editing': editing, 'character-list__grid--dragging': isDragging }"
-    >
-      <CharacterCard
-        v-for="(character, index) in characters"
-        :key="character.id"
-        :character="character"
-        :raids="getRaidsForCharacter(character.id)"
-        :gold-summary="getGoldSummary(character.id)"
-        :editing="editing"
-        :draggable="editing"
-        @edit="emit('editCharacter', $event)"
-        @delete="emit('deleteCharacter', $event)"
-        @add-raid="emit('addRaid', $event)"
-        @toggle-raid="emit('toggleRaid', $event)"
-        @remove-raid="emit('removeRaid', $event)"
-        @drag-start="onDragStart($event, index)"
-        @drag-over="onDragOver($event, index)"
-        @drop="onDrop($event, index)"
-      />
+    <!-- Other Characters Section -->
+    <div v-if="otherCharacters.length > 0" class="character-list__section">
+      <div v-if="goldRecipients.length > 0" class="character-list__section-header">
+        <h3>Остальные персонажи</h3>
+        <span class="character-list__section-badge">{{ otherCharacters.length }}</span>
+      </div>
+      <div
+        class="character-list__grid"
+        :class="{ 'character-list__grid--editing': editing, 'character-list__grid--dragging': isDragging }"
+      >
+        <CharacterCard
+          v-for="(character, index) in otherCharacters"
+          :key="character.id"
+          :character="character"
+          :raids="getRaidsForCharacter(character.id)"
+          :gold-summary="getGoldSummary(character.id)"
+          :editing="editing"
+          :draggable="editing"
+          @edit="emit('editCharacter', $event)"
+          @delete="emit('deleteCharacter', $event)"
+          @add-raid="emit('addRaid', $event)"
+          @toggle-raid="emit('toggleRaid', $event)"
+          @remove-raid="emit('removeRaid', $event)"
+          @toggle-gold-recipient="emit('toggleGoldRecipient', $event)"
+          @drag-start="onDragStart($event, index + goldRecipients.length)"
+          @drag-over="onDragOver($event, index + goldRecipients.length)"
+          @drop="onDrop($event, index + goldRecipients.length)"
+        />
+      </div>
     </div>
 
     <div v-if="characters.length === 0" class="character-list__empty">
@@ -116,13 +151,45 @@ function onDrop(event: DragEvent, index: number) {
 
 .character-list__header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+}
+
+.character-list__add-btn {
+  margin-left: auto;
 }
 
 .character-list__header h2 {
   font-size: var(--text-xl);
   font-weight: 600;
+}
+
+.character-list__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.character-list__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.character-list__section-header h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.character-list__section-badge {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background-color: var(--color-surface-hover);
+  padding: 2px var(--spacing-sm);
+  border-radius: var(--radius-sm);
 }
 
 .character-list__limit {
