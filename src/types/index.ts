@@ -153,3 +153,6 @@ export interface CharacterClassConfig {
   value: CharacterClass
   label: string
 }
+
+// Import scope options
+export type ImportScope = 'all' | 'raids' | 'characters'

@@ -281,9 +281,20 @@ export const useCharactersStore = defineStore('characters', () => {
   }
 
   // Import data (full replacement)
-  function importData(data: { characters: Character[]; characterRaids: CharacterRaid[] }): void {
+  // When importing characters only, allowedRaidIds can be provided to filter out
+  // characterRaids that reference raids not in the allowed set
+  function importData(
+    data: { characters: Character[]; characterRaids: CharacterRaid[] },
+    allowedRaidIds?: Set<string>
+  ): void {
     _characters.splice(0, _characters.length, ...data.characters)
-    _characterRaids.splice(0, _characterRaids.length, ...data.characterRaids)
+
+    // Filter characterRaids to only include those with valid raid references
+    const validCharacterRaids = allowedRaidIds
+      ? data.characterRaids.filter(cr => allowedRaidIds.has(cr.raidId))
+      : data.characterRaids
+
+    _characterRaids.splice(0, _characterRaids.length, ...validCharacterRaids)
     persistToStorage()
     persistCharacterRaidsToStorage()
   }
