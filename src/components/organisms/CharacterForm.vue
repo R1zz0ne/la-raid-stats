@@ -118,7 +118,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <form class="character-form" @submit.prevent="handleSubmit">
+  <form class="character-form" data-testid="character-form" @submit.prevent="handleSubmit">
     <h3 class="character-form__title">
       {{ isEditing ? 'Редактировать персонажа' : 'Новый персонаж' }}
     </h3>
@@ -164,10 +164,10 @@ function handleCancel() {
     </div>
 
     <div class="character-form__actions">
-      <BaseButton type="button" variant="secondary" @click="handleCancel">
+      <BaseButton type="button" variant="secondary" data-testid="cancel-btn" @click="handleCancel">
         Отмена
       </BaseButton>
-      <BaseButton type="submit" variant="primary">
+      <BaseButton type="submit" variant="primary" data-testid="submit-btn">
         {{ isEditing ? 'Сохранить' : 'Создать' }}
       </BaseButton>
     </div>

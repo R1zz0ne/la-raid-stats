@@ -6,6 +6,11 @@ import type {
 } from '@/types'
 import { CHARACTER_CLASSES } from '@/constants/characterClasses'
 import { DIFFICULTY_TYPES } from '@/constants/difficultyTypes'
+import {
+  MAX_CHARACTER_NAME_LENGTH,
+  MAX_RAID_NAME_LENGTH,
+  MAX_GEAR_SCORE,
+} from '@/constants'
 
 // Validate character form data
 export function validateCharacter(data: unknown): ValidationResult {
@@ -22,8 +27,8 @@ export function validateCharacter(data: unknown): ValidationResult {
     errors.push('Укажите имя персонажа')
   } else if (charData.name.trim().length === 0) {
     errors.push('Имя персонажа не может быть пустым')
-  } else if (charData.name.trim().length > 50) {
-    errors.push('Имя должно содержать не более 50 символов')
+  } else if (charData.name.trim().length > MAX_CHARACTER_NAME_LENGTH) {
+    errors.push(`Имя должно содержать не более ${MAX_CHARACTER_NAME_LENGTH} символов`)
   }
 
   // Gear score validation
@@ -33,7 +38,7 @@ export function validateCharacter(data: unknown): ValidationResult {
     errors.push('Уровень должен быть числом')
   } else if (charData.gearScore < 0) {
     errors.push('Уровень не может быть отрицательным')
-  } else if (charData.gearScore > 999999) {
+  } else if (charData.gearScore > MAX_GEAR_SCORE) {
     errors.push('Уровень слишком высокий')
   }
 
@@ -122,8 +127,8 @@ export function validateRaid(data: unknown): ValidationResult {
     errors.push('Укажите название рейда')
   } else if (raidData.name.trim().length === 0) {
     errors.push('Название рейда не может быть пустым')
-  } else if (raidData.name.trim().length > 100) {
-    errors.push('Название должно содержать не более 100 символов')
+  } else if (raidData.name.trim().length > MAX_RAID_NAME_LENGTH) {
+    errors.push(`Название должно содержать не более ${MAX_RAID_NAME_LENGTH} символов`)
   }
 
   // Difficulties validation

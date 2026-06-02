@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { Character, CharacterFormData } from '@/types'
+import { ref, computed } from 'vue'
 import { useCharactersStore } from '@/stores/characters'
+import { useModalManager } from '@/composables/useModalManager'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
 import CharacterList from '@/components/organisms/CharacterList.vue'
 import CharacterForm from '@/components/organisms/CharacterForm.vue'
@@ -12,36 +12,36 @@ const charactersStore = useCharactersStore()
 
 // Editing state
 const isEditingMode = ref(false)
-const showCharacterForm = ref(false)
-const editingCharacter = ref<Character | undefined>()
 
-// Raid assignment state
-const showRaidModal = ref(false)
-const selectedCharacter = ref<Character | null>(null)
+// Modal manager
+const {
+  showCharacterForm,
+  editingCharacter,
+  showRaidModal,
+  selectedCharacter,
+  openCharacterForm,
+  closeCharacterForm,
+  submitCharacterForm,
+  openRaidModal,
+  closeRaidModal,
+} = useModalManager()
 
-// Modal close guard to prevent closing when selecting text
-const { onOverlayClick: onCharacterFormClick } = useModalCloseGuard(handleCancelForm)
+// Modal close guard
+const { onOverlayClick: onCharacterFormClick } = useModalCloseGuard(closeCharacterForm)
 
-// Lock body scroll when any modal is open
-watch([showCharacterForm, showRaidModal], ([formOpen, raidOpen]) => {
-  if (formOpen || raidOpen) {
-    document.body.classList.add('body-no-scroll')
-  } else {
-    document.body.classList.remove('body-no-scroll')
-  }
-}, { immediate: true })
-
-// Handlers
+// Computed
 const existingNames = computed(() => charactersStore.characters.map(c => c.name))
 
+// Handlers
 function handleAddCharacter() {
-  editingCharacter.value = undefined
-  showCharacterForm.value = true
+  openCharacterForm()
 }
 
 function handleEditCharacter(id: string) {
-  editingCharacter.value = charactersStore.getCharacterById(id)
-  showCharacterForm.value = true
+  const character = charactersStore.getCharacterById(id)
+  if (character) {
+    openCharacterForm(character)
+  }
 }
 
 function handleDeleteCharacter(id: string) {
@@ -50,37 +50,11 @@ function handleDeleteCharacter(id: string) {
   }
 }
 
-function handleSubmitCharacter(data: CharacterFormData) {
-  if (editingCharacter.value) {
-    charactersStore.updateCharacter(editingCharacter.value.id, {
-      gearScore: data.gearScore,
-      characterClass: data.characterClass,
-      customClassName: data.customClassName,
-    })
-  } else {
-    charactersStore.addCharacter(data)
-  }
-
-  showCharacterForm.value = false
-  editingCharacter.value = undefined
-}
-
-function handleCancelForm() {
-  showCharacterForm.value = false
-  editingCharacter.value = undefined
-}
-
 function handleAddRaid(characterId: string) {
   const character = charactersStore.getCharacterById(characterId)
   if (character) {
-    selectedCharacter.value = character
-    showRaidModal.value = true
+    openRaidModal(character)
   }
-}
-
-function handleCloseRaidModal() {
-  showRaidModal.value = false
-  selectedCharacter.value = null
 }
 
 function handleToggleRaid(raidId: string) {
@@ -152,8 +126,8 @@ function handleResetAllRaids() {
           <CharacterForm
             :character="editingCharacter"
             :existing-names="editingCharacter ? [] : existingNames"
-            @submit="handleSubmitCharacter"
-            @cancel="handleCancelForm"
+            @submit="submitCharacterForm"
+            @cancel="closeCharacterForm"
           />
         </div>
       </div>
@@ -163,7 +137,7 @@ function handleResetAllRaids() {
     <RaidAssignmentModal
       v-if="showRaidModal"
       :character="selectedCharacter"
-      @close="handleCloseRaidModal"
+      @close="closeRaidModal"
     />
   </div>
 </template>

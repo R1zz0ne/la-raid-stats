@@ -184,14 +184,12 @@ function handleClose() {
             </span>
             <BaseButton
               variant="secondary"
-              size="sm"
               @click="handleClose"
             >
               Отмена
             </BaseButton>
             <BaseButton
               variant="primary"
-              size="sm"
               :disabled="selectedCount === 0"
               @click="confirmSelection"
             >

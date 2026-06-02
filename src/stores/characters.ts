@@ -11,10 +11,10 @@ import type {
   DifficultyType,
 } from '@/types'
 import { useRaidsStore } from './raids'
-
-const STORAGE_KEY = 'la-raid-stats-characters'
-const STORAGE_KEY_RAIDS = 'la-raid-stats-character-raids'
-const MAX_CHARACTERS = 30
+import {
+  MAX_CHARACTERS,
+  STORAGE_KEYS,
+} from '@/constants'
 
 export const useCharactersStore = defineStore('characters', () => {
   // State - use reactive for object/array
@@ -245,16 +245,16 @@ export const useCharactersStore = defineStore('characters', () => {
 
   // Persist to localStorage
   function persistToStorage(): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(_characters))
+    localStorage.setItem(STORAGE_KEYS.CHARACTERS, JSON.stringify(_characters))
   }
 
   function persistCharacterRaidsToStorage(): void {
-    localStorage.setItem(STORAGE_KEY_RAIDS, JSON.stringify(_characterRaids))
+    localStorage.setItem(STORAGE_KEYS.CHARACTER_RAIDS, JSON.stringify(_characterRaids))
   }
 
   function loadFromStorage(): void {
     // Load characters
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(STORAGE_KEYS.CHARACTERS)
     if (stored) {
       try {
         const data = JSON.parse(stored)
@@ -267,7 +267,7 @@ export const useCharactersStore = defineStore('characters', () => {
     }
 
     // Load characterRaids
-    const storedRaids = localStorage.getItem(STORAGE_KEY_RAIDS)
+    const storedRaids = localStorage.getItem(STORAGE_KEYS.CHARACTER_RAIDS)
     if (storedRaids) {
       try {
         const data = JSON.parse(storedRaids)

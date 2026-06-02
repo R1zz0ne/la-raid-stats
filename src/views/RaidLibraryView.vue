@@ -79,7 +79,7 @@ function handleCancelForm() {
     <div class="raid-library-view__header">
       <div class="raid-library-view__header-left">
         <h1>Библиотека рейдов</h1>
-        <BaseButton variant="secondary" size="sm" @click="handleResetToDefault">
+        <BaseButton variant="secondary" @click="handleResetToDefault">
           Сбросить к стандартным
         </BaseButton>
       </div>

@@ -43,6 +43,7 @@ watch(model, (newValue) => {
         :type="type ?? 'text'"
         :placeholder="placeholder"
         :disabled="disabled"
+        :data-testid="`input-${id}`"
         @blur="emit('blur', $event)"
         @focus="emit('focus', $event)"
       />

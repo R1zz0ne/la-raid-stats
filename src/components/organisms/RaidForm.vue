@@ -129,7 +129,6 @@ function handleCancel() {
             v-if="availableDifficultyTypes.length > 0"
             type="button"
             variant="secondary"
-            size="sm"
             @click="addDifficulty"
           >
             + Добавить сложность
@@ -157,7 +156,6 @@ function handleCancel() {
                 <BaseButton
                   type="button"
                   variant="secondary"
-                  size="sm"
                   @click="removeDifficulty(index)"
                 >
                   ✕
