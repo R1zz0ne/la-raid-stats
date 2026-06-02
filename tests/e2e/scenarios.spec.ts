@@ -65,7 +65,7 @@ test('Settings: displays export/import panel', async ({ page }) => {
 
 test('Settings: displays app info section', async ({ page }) => {
   await page.goto('/#/settings')
-  await expect(page.locator('text=Lost Ark Raid Tracker')).toBeVisible()
+  await expect(page.locator('strong:has-text("Lost Ark Raid Tracker")')).toBeVisible()
 })
 
 // Theme toggle test

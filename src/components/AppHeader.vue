@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import ThemeToggle from './ThemeToggle.vue'
+import logoIcon from '@/assets/logo-icon.png'
 
 const route = useRoute()
 
@@ -25,7 +26,7 @@ function isActive(linkName: string): boolean {
   <header class="app-header">
     <div class="header-container">
       <RouterLink to="/" class="logo">
-        <span class="logo-icon">⚔️</span>
+        <img :src="logoIcon" alt="Logo" class="logo-icon" />
         <span class="logo-text">Lost Ark Raid Tracker</span>
       </RouterLink>
 
@@ -81,7 +82,8 @@ function isActive(linkName: string): boolean {
 }
 
 .logo-icon {
-  font-size: var(--text-xl);
+  width: 28px;
+  height: 28px;
 }
 
 .nav-links {
