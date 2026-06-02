@@ -158,7 +158,7 @@ const isGoldRecipient = computed({
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   transition: all var(--transition-fast);
 }
 
@@ -179,7 +179,7 @@ const isGoldRecipient = computed({
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
 }
 
 .character-card__info {
@@ -234,7 +234,7 @@ const isGoldRecipient = computed({
 }
 
 .character-card__empty {
-  padding: var(--spacing-md);
+  padding: var(--spacing-sm);
   text-align: center;
   color: var(--color-text-muted);
   font-size: var(--text-sm);

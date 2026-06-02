@@ -64,11 +64,11 @@ const difficulty = computed(() => {
 .raid-item {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
 
@@ -101,6 +101,7 @@ const difficulty = computed(() => {
 .raid-item__gold {
   display: flex;
   gap: var(--spacing-sm);
+  flex-shrink: 0;
 }
 
 .raid-item__gold-item {
@@ -131,5 +132,23 @@ const difficulty = computed(() => {
 .raid-item__remove:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Compact checkbox for raid items */
+.raid-item :deep(.base-checkbox__box) {
+  width: 16px;
+  height: 16px;
+}
+
+.raid-item :deep(.base-checkbox__check) {
+  width: 10px;
+  height: 10px;
+}
+
+/* Compact difficulty badge */
+.raid-item :deep(.difficulty-badge) {
+  padding: 2px 6px;
+  font-size: 10px;
+  min-height: 16px;
 }
 </style>

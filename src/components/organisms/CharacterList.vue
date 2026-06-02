@@ -188,7 +188,7 @@ const otherCharacters = computed(() => {
 
 .character-list__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-md);
 }
 
@@ -220,6 +220,12 @@ const otherCharacters = computed(() => {
 .character-list__empty p {
   font-size: var(--text-lg);
   color: var(--color-text-muted);
+}
+
+@media (max-width: 1200px) {
+  .character-list__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
