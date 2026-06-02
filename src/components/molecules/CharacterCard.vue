@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Character, CharacterRaid, GoldSummary, Raid } from '@/types'
 import { getClassLabel } from '@/constants/characterClasses'
+import { MAX_GOLD_RECIPIENTS, MAX_RAIDS_PER_CHARACTER } from '@/constants'
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseCheckbox from '@/components/atoms/BaseCheckbox.vue'
 import GoldSummaryCard from '@/components/molecules/GoldSummary.vue'
@@ -44,12 +45,19 @@ function getRaidForCharacterRaid(cr: CharacterRaid): Raid | undefined {
 }
 
 // Sort raids to match library order (newest first, like in RaidLibraryView)
+// Filter out raids that no longer exist (orphan protection)
 const sortedRaids = computed(() => {
-  return [...props.raids].sort((a, b) => {
-    const indexA = raidsStore.raids.findIndex(r => r.id === a.raidId)
-    const indexB = raidsStore.raids.findIndex(r => r.id === b.raidId)
-    return indexB - indexA // Newest raid first (reverse of library order)
-  })
+  return props.raids
+    .map(cr => ({
+      characterRaid: cr,
+      raid: getRaidForCharacterRaid(cr),
+    }))
+    .filter(item => item.raid !== undefined)
+    .sort((a, b) => {
+      const indexA = raidsStore.raids.findIndex(r => r.id === a.characterRaid.raidId)
+      const indexB = raidsStore.raids.findIndex(r => r.id === b.characterRaid.raidId)
+      return indexB - indexA
+    })
 })
 
 const isGoldRecipient = computed({
@@ -57,7 +65,7 @@ const isGoldRecipient = computed({
   set: (value: boolean) => {
     if (!value && props.character.isGoldRecipient) {
       emit('toggleGoldRecipient', props.character.id)
-    } else if (value && !props.character.isGoldRecipient && charactersStore.goldRecipientCount() < 6) {
+    } else if (value && !props.character.isGoldRecipient && charactersStore.goldRecipientCount() < MAX_GOLD_RECIPIENTS) {
       emit('toggleGoldRecipient', props.character.id)
     }
   }
@@ -72,6 +80,7 @@ const isGoldRecipient = computed({
       'character-card--gold-recipient': isGoldRecipient
     }"
     :draggable="draggable"
+    :data-testid="`character-card-${character.id}`"
     @dragstart="emit('dragStart', $event, 0)"
     @dragover="emit('dragOver', $event, 0)"
     @drop="emit('drop', $event, 0)"
@@ -79,7 +88,7 @@ const isGoldRecipient = computed({
     <div class="character-card__header">
       <div class="character-card__info">
         <div class="character-card__identity">
-          <span class="character-card__name">{{ character.name }}</span>
+          <span class="character-card__name" :data-testid="`character-name-${character.id}`">{{ character.name }}</span>
           <span class="character-card__class">{{ displayClass }}</span>
           <!-- Gold recipient toggle - only in edit mode -->
           <div v-if="editing" class="character-card__gold-checkbox">
@@ -95,18 +104,18 @@ const isGoldRecipient = computed({
       </div>
 
       <div v-if="editing" class="character-card__actions">
-        <BaseButton variant="secondary" size="sm" @click="emit('edit', character.id)">
+        <BaseButton variant="secondary" :data-testid="`edit-btn-${character.id}`" @click="emit('edit', character.id)">
           Редактировать
         </BaseButton>
-        <BaseButton variant="danger" size="sm" @click="emit('delete', character.id)">
+        <BaseButton variant="danger" :data-testid="`delete-btn-${character.id}`" @click="emit('delete', character.id)">
           Удалить
         </BaseButton>
       </div>
 
       <BaseButton
-        v-else-if="raids.length < 3"
+        v-else-if="raids.length < MAX_RAIDS_PER_CHARACTER"
         variant="primary"
-        size="sm"
+        :data-testid="`add-raid-btn-${character.id}`"
         @click="emit('addRaid', character.id)"
       >
         + Рейд
@@ -116,14 +125,14 @@ const isGoldRecipient = computed({
     <div class="character-card__raids">
       <template v-if="sortedRaids.length > 0">
         <RaidItem
-          v-for="cr in sortedRaids"
-          :key="cr.id"
-          :raid="getRaidForCharacterRaid(cr)!"
-          :difficulty-type="cr.difficultyType"
-          :is-completed="cr.isCompleted"
+          v-for="item in sortedRaids"
+          :key="item.characterRaid.id"
+          :raid="item.raid!"
+          :difficulty-type="item.characterRaid.difficultyType"
+          :is-completed="item.characterRaid.isCompleted"
           :editing="editing"
-          @toggle="emit('toggleRaid', cr.id)"
-          @remove="emit('removeRaid', cr.id)"
+          @toggle="emit('toggleRaid', item.characterRaid.id)"
+          @remove="emit('removeRaid', item.characterRaid.id)"
         />
       </template>
 

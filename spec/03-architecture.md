@@ -39,26 +39,38 @@ src/
 │   │   ├── BaseInput.vue
 │   │   ├── BaseSelect.vue
 │   │   ├── BaseCheckbox.vue
-│   │   └── BaseTooltip.vue
+│   │   ├── BaseRadioGroup.vue
+│   │   ├── BaseTooltip.vue
+│   │   └── RaidDifficultyChip.vue
 │   ├── molecules/              # Композиционные компоненты
 │   │   ├── CharacterCard.vue
 │   │   ├── RaidItem.vue
 │   │   ├── DifficultyBadge.vue
-│   │   └── GoldSummary.vue
-│   ├── organisms/              # Блочные компоненты
-│   │   ├── CharacterList.vue
-│   │   ├── CharacterForm.vue
-│   │   ├── RaidForm.vue
-│   │   ├── RaidCard.vue
-│   │   └── ExportImportPanel.vue
-│   └── templates/              # Шаблоны страниц
-│       ├── DashboardTemplate.vue
-│       ├── RaidLibraryTemplate.vue
-│       └── SettingsTemplate.vue
+│   │   ├── GoldSummary.vue
+│   │   └── GoldProgress.vue
+│   └── organisms/              # Блочные компоненты
+│       ├── CharacterList.vue
+│       ├── CharacterForm.vue
+│       ├── RaidForm.vue
+│       ├── RaidCard.vue
+│       ├── RaidAssignmentModal.vue
+│       ├── ExportImportPanel.vue
+│       └── ImportOptionsModal.vue
 ├── composables/
 │   ├── useLocalStorage.ts      # localStorage abstraction
 │   ├── useDragDrop.ts          # Drag-and-drop логика
-│   └── useTheme.ts             # Управление темой
+│   ├── useTheme.ts             # Управление темой
+│   ├── useModalManager.ts      # Управление модальными окнами
+│   └── useModalCloseGuard.ts   # Защита от случайного закрытия
+├── constants/
+│   ├── index.ts                # Общие константы (лимиты, ключи)
+│   ├── characterClasses.ts     # Классы персонажей
+│   └── difficultyTypes.ts      # Типы сложностей
+├── docs/                       # Документация компонентов
+│   └── components/
+│       ├── atoms/
+│       ├── molecules/
+│       └── organisms/
 ├── router/
 │   └── index.ts                # Vue Router конфиг
 ├── stores/
@@ -403,6 +415,35 @@ export function useTheme() {
 }
 ```
 
+### 7.4 useModalManager
+
+```typescript
+// composables/useModalManager.ts
+// Singleton state для управления модальными окнами
+
+interface ModalState {
+  isOpen: boolean
+  data: unknown
+}
+
+// Открыть/закрыть модальное окно с данными
+function openModal<T>(data: T): void
+function closeModal(): void
+function getModalData<T>(): T | undefined
+```
+
+### 7.5 useModalCloseGuard
+
+```typescript
+// composables/useModalCloseGuard.ts
+// Защита от случайного закрытия модального окна
+
+function useModalCloseGuard(onClose: () => void) {
+  // onOverlayClick — клик по оверлею закрывает модалку
+  // onEscape — нажатие Escape закрывает модалку
+}
+```
+
 ---
 
 ## 8. Утилиты
@@ -523,33 +564,33 @@ interface ExportData {
 const CHARACTER_CLASSES = [
   { value: 'berserker', label: 'Берсерк' },
   { value: 'destroyer', label: 'Сокрушитель' },
-  { value: 'warden', label: 'Страж' },
+  { value: 'gunlancer', label: 'Страж' },
   { value: 'paladin', label: 'Паладин' },
-  { value: 'valkyrie', label: 'Валькирия' },
-  { value: 'sentinel', label: 'Храмовница' },
+  { value: 'slayer', label: 'Валькирия' },
+  { value: 'valkyrie', label: 'Храмовница' },
   { value: 'arcanist', label: 'Арканолог' },
   { value: 'summoner', label: 'Призывательница' },
   { value: 'bard', label: 'Менестрель' },
   { value: 'sorceress', label: 'Чародейка' },
-  { value: 'avatar', label: 'Аватар' },
-  { value: 'duelist', label: 'Дуалист' },
-  { value: 'keymaster', label: 'Ки-мастер' },
-  { value: 'spearmaster', label: 'Мастер копья' },
-  { value: 'tycoon', label: 'Тайгон' },
-  { value: 'steelknuckle', label: 'Стальной кулак' },
-  { value: 'ranger', label: 'Рейнджер' },
-  { value: 'demonhunter', label: 'Охотник на демонов' },
-  { value: 'mechanist', label: 'Механист' },
-  { value: 'agent', label: 'Агент С.К.А.У.Т' },
-  { value: 'demonhunteR', label: 'Охотница на демонов' },
-  { value: 'bladeofdeath', label: 'Клинок смерти' },
-  { value: 'fury', label: 'Фурия' },
+  { value: 'wardancer', label: 'Аватар' },
+  { value: 'scrapper', label: 'Дуалист' },
+  { value: 'soulfist', label: 'Ки-мастер' },
+  { value: 'glaivier', label: 'Мастер копья' },
+  { value: 'striker', label: 'Тайгон' },
+  { value: 'breaker', label: 'Стальной кулак' },
+  { value: 'sharpshooter', label: 'Рейнджер' },
+  { value: 'deadeye', label: 'Охотник на демонов' },
+  { value: 'artillerist', label: 'Механист' },
+  { value: 'machinist', label: 'Агент С.К.А.У.Т' },
+  { value: 'gunslinger', label: 'Охотница на демонов' },
+  { value: 'deathblade', label: 'Клинок смерти' },
+  { value: 'shadowhunter', label: 'Фурия' },
   { value: 'reaper', label: 'Жнец' },
-  { value: 'soul devourer', label: 'Пожирательница душ' },
+  { value: 'souleater', label: 'Пожирательница душ' },
   { value: 'artist', label: 'Художница' },
   { value: 'aeromancer', label: 'Аэромант' },
-  { value: 'druid', label: 'Друид' },
-  { value: 'wardenknight', label: 'Рыцарь-Хранитель' },
+  { value: 'wildsoul', label: 'Друид' },
+  { value: 'guardianknight', label: 'Рыцарь-Хранитель' },
   { value: 'custom', label: 'Свой вариант' },
 ];
 ```
@@ -596,9 +637,9 @@ Stores (Pinia)
 
 | Тип тестов | Фреймворк | Coverage |
 |------------|-----------|----------|
-| Unit | Vitest | 80%+ |
+| Unit | Vitest | 81%+ |
 | Component | Vue Test Utils + Vitest | atoms/, molecules/ |
-| E2E | Playwright | 12 сценариев из R&D |
+| E2E | Playwright | 8 сценариев |
 
 ### 15.2 Структура тестов
 
@@ -606,26 +647,34 @@ Stores (Pinia)
 tests/
 ├── unit/
 │   ├── stores/
-│   │   ├── characters.test.ts    # CRUD + gold summary + cascade delete
-│   │   ├── raids.test.ts         # CRUD + getAvailableRaidsForGearScore
-│   │   └── settings.test.ts      # setTheme, toggleTheme
+│   │   ├── characters.test.ts      # CRUD + gold summary + cascade delete
+│   │   ├── characters-additional.test.ts # reorder, import, orphan removal
+│   │   ├── raids.test.ts          # CRUD + getAvailableRaidsForGearScore
+│   │   └── settings.test.ts       # setTheme, toggleTheme
 │   └── utils/
-│       ├── transliterate.test.ts # English/Russian cases
-│       └── validators.test.ts    # Character/Raid/Difficulty validation
+│       ├── transliterate.test.ts  # English/Russian cases
+│       └── validators.test.ts     # Character/Raid/Difficulty validation
 ├── components/
 │   ├── atoms/
-│   │   ├── BaseButton.test.ts   # render, props, disabled
-│   │   ├── BaseInput.test.ts    # render, input event, validation
-│   │   ├── BaseSelect.test.ts   # render, select, options
-│   │   ├── BaseCheckbox.test.ts # render, checked state
-│   │   └── BaseTooltip.test.ts  # visibility toggle
-│   └── molecules/
-│       ├── CharacterCard.test.ts # render, props, raid list
-│       ├── RaidItem.test.ts      # toggle completed
-│       ├── DifficultyBadge.test.ts
-│       └── GoldSummary.test.ts
+│   │   ├── BaseButton.test.ts
+│   │   ├── BaseInput.test.ts
+│   │   ├── BaseSelect.test.ts
+│   │   ├── BaseCheckbox.test.ts
+│   │   ├── BaseTooltip.test.ts
+│   │   └── RaidDifficultyChip.test.ts
+│   ├── molecules/
+│   │   ├── CharacterCard.test.ts
+│   │   ├── RaidItem.test.ts
+│   │   ├── DifficultyBadge.test.ts
+│   │   └── GoldSummary.test.ts
+│   └── organisms/
+│       ├── CharacterForm.test.ts
+│       ├── CharacterList.test.ts
+│       ├── RaidForm.test.ts
+│       ├── RaidCard.test.ts
+│       └── RaidAssignmentModal.test.ts
 └── e2e/
-    └── scenarios.spec.ts        # 12 scenarios from R&D
+    └── scenarios.spec.ts          # 8 сценариев
 ```
 
 ### 15.3 Unit-тесты (Vitest)

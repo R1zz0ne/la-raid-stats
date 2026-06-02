@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Character, CharacterRaid, GoldSummary } from '@/types'
+import type { Character } from '@/types'
 import { useCharactersStore } from '@/stores/characters'
 import { useDragDrop } from '@/composables/useDragDrop'
 import CharacterCard from '@/components/molecules/CharacterCard.vue'
@@ -23,15 +23,6 @@ const emit = defineEmits<{
 
 const charactersStore = useCharactersStore()
 
-// Compute raid data for each character
-function getRaidsForCharacter(characterId: string): CharacterRaid[] {
-  return charactersStore.getRaidsForCharacter(characterId)
-}
-
-function getGoldSummary(characterId: string): GoldSummary {
-  return charactersStore.getGoldSummary(characterId)
-}
-
 // Drag and drop
 const charactersRef = computed(() => props.characters)
 
@@ -44,8 +35,6 @@ const { isDragging, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
     enabled: computed(() => props.editing),
   },
 )
-
-
 
 function onDragStart(event: DragEvent, index: number) {
   handleDragStart(event, index)
@@ -85,8 +74,8 @@ const otherCharacters = computed(() => {
           v-for="(character, index) in goldRecipients"
           :key="character.id"
           :character="character"
-          :raids="getRaidsForCharacter(character.id)"
-          :gold-summary="getGoldSummary(character.id)"
+          :raids="charactersStore.getRaidsForCharacter(character.id)"
+          :gold-summary="charactersStore.getGoldSummary(character.id)"
           :editing="editing"
           :draggable="editing"
           @edit="emit('editCharacter', $event)"
@@ -116,8 +105,8 @@ const otherCharacters = computed(() => {
           v-for="(character, index) in otherCharacters"
           :key="character.id"
           :character="character"
-          :raids="getRaidsForCharacter(character.id)"
-          :gold-summary="getGoldSummary(character.id)"
+          :raids="charactersStore.getRaidsForCharacter(character.id)"
+          :gold-summary="charactersStore.getGoldSummary(character.id)"
           :editing="editing"
           :draggable="editing"
           @edit="emit('editCharacter', $event)"

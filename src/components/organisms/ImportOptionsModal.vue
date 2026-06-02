@@ -5,7 +5,7 @@
  * Modal for selecting import scope after file selection.
  * Displays available data types and confirms import action.
  */
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
 import type { ImportScope } from '@/types'
 import BaseButton from '@/components/atoms/BaseButton.vue'
@@ -53,10 +53,6 @@ const scopeOptions = [
 ]
 
 const selectedScope = ref<ImportScope>('all')
-
-const selectedOption = computed(() =>
-  scopeOptions.find(opt => opt.value === selectedScope.value)
-)
 
 function handleConfirm() {
   emit('confirm', selectedScope.value)

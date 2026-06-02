@@ -11,7 +11,14 @@ const navLinks = [
   { to: '/settings', name: 'settings', label: 'Настройки' },
 ]
 
-const isActive = (linkName: string) => computed(() => route.name === linkName)
+// Single computed that creates a Map of active route names
+const activeRoutes = computed(() => {
+  return new Map(navLinks.map(link => [link.name, route.name === link.name]))
+})
+
+function isActive(linkName: string): boolean {
+  return activeRoutes.value.get(linkName) ?? false
+}
 </script>
 
 <template>
@@ -28,7 +35,7 @@ const isActive = (linkName: string) => computed(() => route.name === linkName)
           :key="link.name"
           :to="link.to"
           class="nav-link"
-          :class="{ 'nav-link--active': isActive(link.name).value }"
+          :class="{ 'nav-link--active': isActive(link.name) }"
         >
           {{ link.label }}
         </RouterLink>

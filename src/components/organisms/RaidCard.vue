@@ -18,10 +18,10 @@ const emit = defineEmits<{
     <div class="raid-card__header">
       <h3 class="raid-card__name">{{ raid.name }}</h3>
       <div class="raid-card__actions">
-        <BaseButton variant="secondary" size="sm" @click="emit('edit', raid.id)">
+        <BaseButton variant="secondary" @click="emit('edit', raid.id)">
           Редактировать
         </BaseButton>
-        <BaseButton variant="danger" size="sm" @click="emit('delete', raid.id)">
+        <BaseButton variant="danger" @click="emit('delete', raid.id)">
           Удалить
         </BaseButton>
       </div>
