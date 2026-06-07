@@ -65,5 +65,6 @@ const badgeStyle = computed(() => {
   line-height: 1.2;
   min-height: 18px;
   box-sizing: border-box;
+  text-align: center;
 }
 </style>

@@ -5,6 +5,7 @@ import DifficultyBadge from '@/components/molecules/DifficultyBadge.vue'
 
 defineProps<{
   raid: Raid
+  editing?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -17,27 +18,17 @@ const emit = defineEmits<{
   <div class="raid-card">
     <div class="raid-card__header">
       <h3 class="raid-card__name">{{ raid.name }}</h3>
-      <div class="raid-card__actions">
-        <BaseButton variant="secondary" @click="emit('edit', raid.id)">
-          Редактировать
-        </BaseButton>
-        <BaseButton variant="danger" @click="emit('delete', raid.id)">
-          Удалить
-        </BaseButton>
+      <div v-if="editing" class="raid-card__header-right">
+        <BaseButton variant="secondary" title="Редактировать" @click.stop="emit('edit', raid.id)">✎</BaseButton>
+        <BaseButton variant="danger" title="Удалить" @click.stop="emit('delete', raid.id)">✕</BaseButton>
       </div>
-    </div>
-
-    <div class="raid-card__difficulties">
-      <DifficultyBadge
-        v-for="diff in raid.difficulties"
-        :key="diff.type"
-        :type="diff.type"
-      />
     </div>
 
     <div class="raid-card__details">
       <div v-for="diff in raid.difficulties" :key="diff.type" class="raid-card__detail">
-        <span class="raid-card__detail-label">{{ diff.type }}:</span>
+        <div class="raid-card__detail-badge">
+          <DifficultyBadge :type="diff.type" />
+        </div>
         <span class="raid-card__detail-gs">ГС: {{ diff.requiredGearScore }}</span>
         <span class="raid-card__detail-gold">💰 {{ diff.regularGold }} ✨ {{ diff.limitedGold }}</span>
       </div>
@@ -69,15 +60,10 @@ const emit = defineEmits<{
   color: var(--color-text);
 }
 
-.raid-card__actions {
+.raid-card__header-right {
   display: flex;
+  align-items: center;
   gap: var(--spacing-sm);
-}
-
-.raid-card__difficulties {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
 }
 
 .raid-card__details {
@@ -87,17 +73,34 @@ const emit = defineEmits<{
 }
 
 .raid-card__detail {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr;
+  gap: var(--spacing-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  align-items: center;
+}
+
+.raid-card__detail-badge {
+  width: 100px;
+}
+
+.raid-card__detail {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
 
-.raid-card__detail-label {
-  text-transform: capitalize;
-  min-width: 80px;
+.raid-card__detail-values {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-sm) var(--spacing-lg);
+  min-width: 200px;
 }
+
+
 
 .raid-card__detail-gs {
   color: var(--color-primary);
