@@ -40,6 +40,11 @@ const displayClass = computed(() => {
   return getClassLabel(props.character.characterClass)
 })
 
+const classIconPath = computed(() => {
+  if (props.character.characterClass === 'custom') return null
+  return `/classes/${props.character.characterClass}.webp`
+})
+
 function getRaidForCharacterRaid(cr: CharacterRaid): Raid | undefined {
   return raidsStore.getRaidById(cr.raidId)
 }
@@ -94,9 +99,21 @@ const isAllCompleted = computed(() =>
       <div class="character-card__info">
         <div class="character-card__identity">
           <span class="character-card__name" :data-testid="`character-name-${character.id}`">{{ character.name }}</span>
-          <span class="character-card__class">{{ displayClass }}</span>
+          <span v-if="editing" class="character-card__class-text">{{ displayClass }}</span>
         </div>
         <span class="character-card__gs">ГС: {{ character.gearScore.toLocaleString('ru-RU') }}</span>
+      </div>
+
+      <div v-if="!editing && classIconPath" class="character-card__class-icon-wrapper">
+        <img 
+          :src="classIconPath" 
+          :alt="displayClass"
+          :title="displayClass"
+          class="character-card__class-icon"
+        />
+      </div>
+      <div v-if="!editing && !classIconPath" class="character-card__class-badge">
+        {{ displayClass }}
       </div>
 
       <div v-if="editing" class="character-card__actions">
@@ -193,6 +210,8 @@ const isAllCompleted = computed(() =>
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 0;
 }
 
 .character-card__info {
@@ -213,12 +232,52 @@ const isAllCompleted = computed(() =>
   color: var(--color-text);
 }
 
-.character-card__class {
+.character-card__class-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+[data-theme="light"] .character-card__class-icon-wrapper {
+  background-color: #94a3b8;
+}
+
+[data-theme="dark"] .character-card__class-icon-wrapper {
+  background-color: var(--color-surface);
+}
+
+.character-card__class-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  cursor: help;
+  transition: transform var(--transition-fast);
+}
+
+.character-card__class-icon:hover {
+  transform: scale(1.1);
+}
+
+.character-card__class-badge {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   padding: 2px var(--spacing-sm);
-  background-color: var(--color-surface-hover);
   border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+[data-theme="light"] .character-card__class-badge {
+  background-color: #94a3b8;
+}
+
+[data-theme="dark"] .character-card__class-badge {
+  background-color: var(--color-surface-hover);
 }
 
 .character-card__gold-checkbox {
