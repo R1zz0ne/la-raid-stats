@@ -9,6 +9,9 @@ import BaseButton from '@/components/atoms/BaseButton.vue'
 
 const raidsStore = useRaidsStore()
 
+// Editing mode state
+const isEditingMode = ref(false)
+
 // Form state
 const showRaidForm = ref(false)
 const editingRaid = ref<Raid | undefined>()
@@ -76,16 +79,25 @@ function handleCancelForm() {
 
 <template>
   <div class="raid-library-view">
-    <div class="raid-library-view__header">
+    <div class="raid-library-view__header" :class="{ 'raid-library-view__header--sticky': isEditingMode }">
       <div class="raid-library-view__header-left">
         <h1>Библиотека рейдов</h1>
         <BaseButton variant="secondary" @click="handleResetToDefault">
           Сбросить к стандартным
         </BaseButton>
       </div>
-      <BaseButton variant="primary" @click="handleAddRaid">
-        + Добавить рейд
-      </BaseButton>
+      <div class="raid-library-view__header-right">
+        <button
+          class="raid-library-view__edit-toggle"
+          :class="{ 'raid-library-view__edit-toggle--active': isEditingMode }"
+          @click="isEditingMode = !isEditingMode"
+        >
+          {{ isEditingMode ? '✓ Режим редактирования' : 'Режим редактирования' }}
+        </button>
+        <BaseButton variant="primary" @click="handleAddRaid">
+          Добавить рейд
+        </BaseButton>
+      </div>
     </div>
 
     <div v-if="raidsStore.raids.length > 0" class="raid-library-view__grid">
@@ -93,6 +105,7 @@ function handleCancelForm() {
         v-for="raid in [...raidsStore.raids].reverse()"
         :key="raid.id"
         :raid="raid"
+        :editing="isEditingMode"
         @edit="handleEditRaid"
         @delete="handleDeleteRaid"
       />
@@ -101,7 +114,7 @@ function handleCancelForm() {
     <div v-else class="raid-library-view__empty">
       <p>Нет рейдов. Добавьте первый!</p>
       <BaseButton variant="primary" @click="handleAddRaid">
-        + Добавить рейд
+        Добавить рейд
       </BaseButton>
     </div>
 
@@ -135,10 +148,46 @@ function handleCancelForm() {
   gap: var(--spacing-md);
 }
 
+.raid-library-view__header--sticky {
+  position: sticky;
+  top: 72px;
+  z-index: 50;
+  background-color: var(--color-bg);
+  box-shadow: 0 0 0 1px var(--color-bg);
+}
+
 .raid-library-view__header-left {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+}
+
+.raid-library-view__header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+}
+
+.raid-library-view__edit-toggle {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.raid-library-view__edit-toggle:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.raid-library-view__edit-toggle--active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 .raid-library-view__header h1 {
