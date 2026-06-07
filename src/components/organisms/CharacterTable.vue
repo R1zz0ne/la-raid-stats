@@ -148,6 +148,11 @@ function getDisplayClass(character: Character): string {
   return getClassLabel(character.characterClass)
 }
 
+function getClassIconPath(character: Character): string | undefined {
+  if (character.characterClass === 'custom') return undefined
+  return `/classes/${character.characterClass}.webp`
+}
+
 function isGoldRecipient(character: Character): boolean {
   return character.isGoldRecipient ?? false
 }
@@ -197,7 +202,15 @@ function isGoldRecipient(character: Character): boolean {
               <span class="character-table__name">{{ character.name }}</span>
             </td>
             <td class="character-table__td">
-              <span class="character-table__class-badge">{{ getDisplayClass(character) }}</span>
+              <template v-if="getClassIconPath(character)">
+                <img 
+                  :src="getClassIconPath(character)" 
+                  :alt="getDisplayClass(character)"
+                  :title="getDisplayClass(character)"
+                  class="character-table__class-icon"
+                />
+              </template>
+              <span v-else class="character-table__class-badge">{{ getDisplayClass(character) }}</span>
             </td>
             <td class="character-table__td">
               <span class="character-table__gs">{{ character.gearScore.toLocaleString('ru-RU') }}</span>
@@ -315,7 +328,15 @@ function isGoldRecipient(character: Character): boolean {
               <span class="character-table__name">{{ character.name }}</span>
             </td>
             <td class="character-table__td">
-              <span class="character-table__class-badge">{{ getDisplayClass(character) }}</span>
+              <template v-if="getClassIconPath(character)">
+                <img 
+                  :src="getClassIconPath(character)" 
+                  :alt="getDisplayClass(character)"
+                  :title="getDisplayClass(character)"
+                  class="character-table__class-icon"
+                />
+              </template>
+              <span v-else class="character-table__class-badge">{{ getDisplayClass(character) }}</span>
             </td>
             <td class="character-table__td">
               <span class="character-table__gs">{{ character.gearScore.toLocaleString('ru-RU') }}</span>
@@ -527,8 +548,29 @@ function isGoldRecipient(character: Character): boolean {
   padding: 2px var(--spacing-sm);
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  background-color: var(--color-surface-hover);
   border-radius: var(--radius-sm);
+}
+
+[data-theme="light"] .character-table__class-badge {
+  background-color: #94a3b8;
+}
+
+[data-theme="dark"] .character-table__class-badge {
+  background-color: var(--color-surface-hover);
+}
+
+.character-table__class-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 50%;
+  cursor: help;
+  vertical-align: middle;
+  padding: 3px;
+}
+
+[data-theme="light"] .character-table__class-icon {
+  background-color: #94a3b8;
 }
 
 .character-table__gs {
