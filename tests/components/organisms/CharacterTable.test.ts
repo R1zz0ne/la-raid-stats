@@ -88,7 +88,10 @@ describe('CharacterTable', () => {
       })
 
       expect(wrapper.text()).toContain('TestChar')
-      expect(wrapper.text()).toContain('Менестрель')
+      // Class is now displayed as an icon with title attribute for tooltip
+      const icon = wrapper.find('.character-table__class-icon')
+      expect(icon.exists()).toBe(true)
+      expect(icon.attributes('title')).toContain('Менестрель')
       // Gear score: 1700 formatted with locale (ru-RU uses nbsp between 1 and 700)
       // Check that the digits appear in sequence (with any separator)
       expect(wrapper.text()).toMatch(/1700|1\u00a0700/)

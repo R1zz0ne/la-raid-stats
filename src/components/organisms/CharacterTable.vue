@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import type { Character, CharacterRaid, GoldSummary, Raid } from '@/types'
 import { getClassLabel } from '@/constants/characterClasses'
+import { getClassIcon } from '@/constants/classIcons'
 import { MAX_GOLD_RECIPIENTS, MAX_RAIDS_PER_CHARACTER } from '@/constants'
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseCheckbox from '@/components/atoms/BaseCheckbox.vue'
@@ -150,7 +151,7 @@ function getDisplayClass(character: Character): string {
 
 function getClassIconPath(character: Character): string | undefined {
   if (character.characterClass === 'custom') return undefined
-  return `/classes/${character.characterClass}.webp`
+  return getClassIcon(character.characterClass)
 }
 
 function isGoldRecipient(character: Character): boolean {

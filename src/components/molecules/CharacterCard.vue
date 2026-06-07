@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Character, CharacterRaid, GoldSummary, Raid } from '@/types'
 import { getClassLabel } from '@/constants/characterClasses'
+import { getClassIcon } from '@/constants/classIcons'
 import { MAX_GOLD_RECIPIENTS, MAX_RAIDS_PER_CHARACTER } from '@/constants'
 import BaseButton from '@/components/atoms/BaseButton.vue'
 import BaseCheckbox from '@/components/atoms/BaseCheckbox.vue'
@@ -42,7 +43,7 @@ const displayClass = computed(() => {
 
 const classIconPath = computed(() => {
   if (props.character.characterClass === 'custom') return null
-  return `/classes/${props.character.characterClass}.webp`
+  return getClassIcon(props.character.characterClass) ?? null
 })
 
 function getRaidForCharacterRaid(cr: CharacterRaid): Raid | undefined {
