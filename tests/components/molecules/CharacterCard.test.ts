@@ -53,7 +53,7 @@ describe('CharacterCard', () => {
       expect(wrapper.text()).toContain('TestChar')
     })
 
-    it('renders class name', () => {
+    it('renders class icon with tooltip', () => {
       const wrapper = mount(CharacterCard, {
         props: {
           character: mockCharacter,
@@ -62,7 +62,10 @@ describe('CharacterCard', () => {
         },
       })
 
-      expect(wrapper.text()).toContain('Менестрель')
+      // Class is now displayed as an icon with title attribute for tooltip
+      const icon = wrapper.find('.character-card__class-icon')
+      expect(icon.exists()).toBe(true)
+      expect(icon.attributes('title')).toContain('Менестрель')
     })
   })
 
@@ -94,20 +97,21 @@ describe('CharacterCard', () => {
   })
 
   describe('events', () => {
-    it('emits addRaid event when not editing', async () => {
+    it('emits addRaid event when editing', async () => {
       const wrapper = mount(CharacterCard, {
         props: {
           character: mockCharacter,
           raids: mockRaids,
           goldSummary: mockGoldSummary,
-          editing: false,
+          editing: true,
         },
       })
 
-      const button = wrapper.find('button')
+      const button = wrapper.find('.character-card__add-raid-btn')
       await button?.trigger('click')
 
       expect(wrapper.emitted('addRaid')).toBeTruthy()
+      expect(wrapper.emitted('addRaid')[0]).toEqual(['test-char'])
     })
   })
 })

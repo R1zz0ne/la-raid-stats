@@ -44,25 +44,29 @@ describe('RaidCard', () => {
   })
 
   describe('actions', () => {
-    it('renders edit button', () => {
+    it('renders edit button with title', () => {
       const wrapper = mount(RaidCard, {
-        props: { raid: mockRaid },
+        props: { raid: mockRaid, editing: true },
       })
 
-      expect(wrapper.text()).toContain('Редактировать')
+      const editButton = wrapper.findAll('button').at(0)
+      expect(editButton?.exists()).toBe(true)
+      expect(editButton?.attributes('title')).toContain('Редактировать')
     })
 
-    it('renders delete button', () => {
+    it('renders delete button with title', () => {
       const wrapper = mount(RaidCard, {
-        props: { raid: mockRaid },
+        props: { raid: mockRaid, editing: true },
       })
 
-      expect(wrapper.text()).toContain('Удалить')
+      const deleteButton = wrapper.findAll('button').at(1)
+      expect(deleteButton?.exists()).toBe(true)
+      expect(deleteButton?.attributes('title')).toContain('Удалить')
     })
 
     it('emits edit event', async () => {
       const wrapper = mount(RaidCard, {
-        props: { raid: mockRaid },
+        props: { raid: mockRaid, editing: true },
       })
 
       await wrapper.findAll('button').at(0)?.trigger('click')
@@ -73,7 +77,7 @@ describe('RaidCard', () => {
 
     it('emits delete event', async () => {
       const wrapper = mount(RaidCard, {
-        props: { raid: mockRaid },
+        props: { raid: mockRaid, editing: true },
       })
 
       await wrapper.findAll('button').at(1)?.trigger('click')
