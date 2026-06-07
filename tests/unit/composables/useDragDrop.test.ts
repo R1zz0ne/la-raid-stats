@@ -16,9 +16,9 @@ describe('useDragDrop', () => {
 
   const createItemsRef = () =>
     ref([
-      { id: 1, name: 'Item 1', order: 0 },
-      { id: 2, name: 'Item 2', order: 1 },
-      { id: 3, name: 'Item 3', order: 2 },
+      { id: '1', name: 'Item 1', order: 0 },
+      { id: '2', name: 'Item 2', order: 1 },
+      { id: '3', name: 'Item 3', order: 2 },
     ])
 
   describe('initialization', () => {
@@ -58,19 +58,20 @@ describe('useDragDrop', () => {
         onUpdate: vi.fn(),
       })
 
-      handleDragStart(createMockDragEvent(), 0)
+      handleDragStart(createMockDragEvent(), '1')
 
       expect(isDragging.value).toBe(true)
     })
 
-    it('stores the dragged index', () => {
+    it('stores the dragged id', () => {
       const items = createItemsRef()
-      const { handleDragStart } = useDragDrop(items, {
+      const { handleDragStart, draggedId } = useDragDrop(items, {
         onUpdate: vi.fn(),
       })
 
-      // Access internal state indirectly through behavior
-      handleDragStart(createMockDragEvent(), 2)
+      handleDragStart(createMockDragEvent(), '2')
+
+      expect(draggedId.value).toBe('2')
     })
 
     it('prevents drag when enabled is false', () => {
@@ -82,7 +83,7 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
+      handleDragStart(event, '1')
 
       expect(event.preventDefault).toHaveBeenCalled()
     })
@@ -94,21 +95,21 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
+      handleDragStart(event, '1')
 
       expect(event.dataTransfer?.effectAllowed).toBe('move')
     })
 
-    it('sets dataTransfer setData with index', () => {
+    it('sets dataTransfer setData with character id', () => {
       const items = createItemsRef()
       const { handleDragStart } = useDragDrop(items, {
         onUpdate: vi.fn(),
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 2)
+      handleDragStart(event, '2')
 
-      expect(event.dataTransfer?.setData).toHaveBeenCalledWith('text/plain', '2')
+      expect(event.dataTransfer?.setData).toHaveBeenCalledWith('application/character-id', '2')
     })
   })
 
@@ -120,8 +121,8 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
-      handleDragOver(event, 1)
+      handleDragStart(event, '1')
+      handleDragOver(event)
 
       expect(event.preventDefault).toHaveBeenCalled()
     })
@@ -133,8 +134,8 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
-      handleDragOver(event, 1)
+      handleDragStart(event, '1')
+      handleDragOver(event)
 
       expect(event.dataTransfer?.dropEffect).toBe('move')
     })
@@ -148,7 +149,7 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragOver(event, 0)
+      handleDragOver(event)
 
       // Should not call preventDefault when disabled
       expect(event.preventDefault).not.toHaveBeenCalled()
@@ -162,7 +163,7 @@ describe('useDragDrop', () => {
         onUpdate: vi.fn(),
       })
 
-      handleDragStart(createMockDragEvent(), 0)
+      handleDragStart(createMockDragEvent(), '1')
       expect(isDragging.value).toBe(true)
 
       handleDragEnd()
@@ -172,31 +173,31 @@ describe('useDragDrop', () => {
   })
 
   describe('handleDrop', () => {
-    it('reorders items when dropped at different index', () => {
+    it('reorders items when dropped on different item', () => {
       const items = createItemsRef()
       const onUpdate = vi.fn()
       const { handleDragStart, handleDrop } = useDragDrop(items, {
         onUpdate,
       })
 
-      handleDragStart(createMockDragEvent(), 0)
-      handleDrop(createMockDragEvent(), 2)
+      handleDragStart(createMockDragEvent(), '1')
+      handleDrop(createMockDragEvent(), '2')
 
       expect(onUpdate).toHaveBeenCalled()
       const newItems = onUpdate.mock.calls[0][0]
       expect(newItems[0].name).toBe('Item 2')
-      expect(newItems[2].name).toBe('Item 1')
+      expect(newItems[1].name).toBe('Item 1')
     })
 
-    it('does not call onUpdate when dropped at same index', () => {
+    it('does not call onUpdate when dropped on same item', () => {
       const items = createItemsRef()
       const onUpdate = vi.fn()
       const { handleDragStart, handleDrop } = useDragDrop(items, {
         onUpdate,
       })
 
-      handleDragStart(createMockDragEvent(), 0)
-      handleDrop(createMockDragEvent(), 0)
+      handleDragStart(createMockDragEvent(), '1')
+      handleDrop(createMockDragEvent(), '1')
 
       expect(onUpdate).not.toHaveBeenCalled()
     })
@@ -208,31 +209,31 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
-      handleDrop(event, 1)
+      handleDragStart(event, '1')
+      handleDrop(event, '2')
 
       expect(event.preventDefault).toHaveBeenCalled()
     })
 
     it('updates order property on reorder', () => {
       const items = ref([
-        { id: 1, name: 'Item 1', order: 0 },
-        { id: 2, name: 'Item 2', order: 1 },
+        { id: '1', name: 'Item 1', order: 0 },
+        { id: '2', name: 'Item 2', order: 1 },
       ])
       const onUpdate = vi.fn()
       const { handleDragStart, handleDrop } = useDragDrop(items, {
         onUpdate,
       })
 
-      handleDragStart(createMockDragEvent(), 0)
-      handleDrop(createMockDragEvent(), 1)
+      handleDragStart(createMockDragEvent(), '1')
+      handleDrop(createMockDragEvent(), '2')
 
       const newItems = onUpdate.mock.calls[0][0]
       expect(newItems[0].order).toBe(0)
       expect(newItems[1].order).toBe(1)
     })
 
-    it('does not crash when fromIndex is null', () => {
+    it('does not crash when draggedId is null', () => {
       const items = createItemsRef()
       const onUpdate = vi.fn()
       const { handleDrop, handleDragEnd } = useDragDrop(items, {
@@ -242,9 +243,9 @@ describe('useDragDrop', () => {
       // Simulate drop without prior drag start
       handleDragEnd()
       const event = createMockDragEvent()
-      handleDrop(event, 1)
+      handleDrop(event, '2')
 
-      // Should not call onUpdate when fromIndex is null
+      // Should not call onUpdate when draggedId is null
       expect(onUpdate).not.toHaveBeenCalled()
     })
 
@@ -258,8 +259,8 @@ describe('useDragDrop', () => {
       })
 
       const event = createMockDragEvent()
-      handleDragStart(event, 0)
-      handleDrop(event, 1)
+      handleDragStart(event, '1')
+      handleDrop(event, '2')
 
       expect(onUpdate).not.toHaveBeenCalled()
     })
@@ -268,16 +269,16 @@ describe('useDragDrop', () => {
   describe('edge cases', () => {
     it('handles items without order property', () => {
       const items = ref([
-        { id: 1, name: 'Item 1' },
-        { id: 2, name: 'Item 2' },
+        { id: '1', name: 'Item 1' },
+        { id: '2', name: 'Item 2' },
       ])
       const onUpdate = vi.fn()
       const { handleDragStart, handleDrop } = useDragDrop(items, {
         onUpdate,
       })
 
-      handleDragStart(createMockDragEvent(), 0)
-      handleDrop(createMockDragEvent(), 1)
+      handleDragStart(createMockDragEvent(), '1')
+      handleDrop(createMockDragEvent(), '2')
 
       expect(onUpdate).toHaveBeenCalled()
       const newItems = onUpdate.mock.calls[0][0]
@@ -285,14 +286,14 @@ describe('useDragDrop', () => {
     })
 
     it('handles single item array', () => {
-      const items = ref([{ id: 1, name: 'Only Item' }])
+      const items = ref([{ id: '1', name: 'Only Item' }])
       const onUpdate = vi.fn()
       const { handleDragStart, handleDrop } = useDragDrop(items, {
         onUpdate,
       })
 
-      handleDragStart(createMockDragEvent(), 0)
-      handleDrop(createMockDragEvent(), 0)
+      handleDragStart(createMockDragEvent(), '1')
+      handleDrop(createMockDragEvent(), '1')
 
       // Dropping at same index should not trigger update
       expect(onUpdate).not.toHaveBeenCalled()

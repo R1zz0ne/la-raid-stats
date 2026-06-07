@@ -105,13 +105,13 @@ describe('useCharactersStore - дополнительные тесты', () => {
       const char3 = store.addCharacter({ name: 'Char3', gearScore: 1500, characterClass: 'bard' })
       
       // Reorder: char3, char1, char2
-      store.reorderCharacters([char3!, char1!, char2!])
-      
+store.reorderCharacters([char3!, char1!, char2!])
+
       const sorted = store.sortedCharacters
       expect(sorted[0].name).toBe('Char3')
       expect(sorted[1].name).toBe('Char1')
       expect(sorted[2].name).toBe('Char2')
-      
+
       expect(sorted[0].order).toBe(0)
       expect(sorted[1].order).toBe(1)
       expect(sorted[2].order).toBe(2)

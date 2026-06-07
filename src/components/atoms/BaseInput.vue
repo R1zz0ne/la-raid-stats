@@ -11,6 +11,7 @@ const props = defineProps<{
   disabled?: boolean
   id?: string
   min?: number | string
+  step?: number | string
 }>()
 
 const emit = defineEmits<{
@@ -43,6 +44,7 @@ watch(model, (newValue) => {
         :type="type ?? 'text'"
         :placeholder="placeholder"
         :disabled="disabled"
+        :step="step"
         :data-testid="`input-${id}`"
         @blur="emit('blur', $event)"
         @focus="emit('focus', $event)"

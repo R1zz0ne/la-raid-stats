@@ -164,7 +164,8 @@ function handleCancel() {
         v-model="gearScoreStr"
         type="number"
         min="0"
-        placeholder="Например: 1700"
+        step="0.01"
+        placeholder="Например: 1700.50"
         label="ГС (Уровень персонажа)"
         id="character-gs"
       />

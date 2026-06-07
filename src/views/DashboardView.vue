@@ -1,20 +1,37 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useCharactersStore } from '@/stores/characters'
 import { useSettingsStore } from '@/stores/settings'
 import { useModalManager } from '@/composables/useModalManager'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
+import { setToastAPI, useGearScoreRefresh } from '@/composables/useGearScoreRefresh'
 import CharacterList from '@/components/organisms/CharacterList.vue'
 import CharacterForm from '@/components/organisms/CharacterForm.vue'
 import RaidAssignmentModal from '@/components/organisms/RaidAssignmentModal.vue'
+import ImportFromArmoryModal from '@/components/organisms/ImportFromArmoryModal.vue'
+import GearScoreRefreshModal from '@/components/organisms/GearScoreRefreshModal.vue'
+import ToastContainer from '@/components/molecules/ToastContainer.vue'
 import GoldProgress from '@/components/molecules/GoldProgress.vue'
 import ViewModeToggle from '@/components/molecules/ViewModeToggle.vue'
 
 const charactersStore = useCharactersStore()
 const settingsStore = useSettingsStore()
 
+// Toast ref
+const toastRef = ref<InstanceType<typeof ToastContainer> | null>(null)
+
+// Initialize toast API
+onMounted(() => {
+  if (toastRef.value) {
+    setToastAPI(toastRef.value)
+  }
+})
+
 // Editing state
 const isEditingMode = ref(false)
+
+// Gear score refresh state
+const { isRefreshing: isGsRefreshing } = useGearScoreRefresh()
 
 // Modal manager
 const {
@@ -31,6 +48,9 @@ const {
 
 // Modal close guard
 const { onOverlayClick: onCharacterFormClick } = useModalCloseGuard(closeCharacterForm)
+
+// Import from armory modal state
+const showImportModal = ref(false)
 
 // Computed
 const existingNames = computed(() => charactersStore.characters.map(c => c.name))
@@ -72,6 +92,27 @@ function handleToggleGoldRecipient(characterId: string) {
   charactersStore.toggleGoldRecipient(characterId)
 }
 
+// Gear score refresh modal
+const showGearScoreRefreshModal = ref(false)
+const isRefreshingGs = ref(false)
+
+function openGearScoreRefreshModal() {
+  showGearScoreRefreshModal.value = true
+}
+
+function closeGearScoreRefreshModal() {
+  showGearScoreRefreshModal.value = false
+}
+
+function onGearScoreRefreshStart() {
+  isRefreshingGs.value = true
+  closeGearScoreRefreshModal()
+}
+
+function onGearScoreRefreshComplete() {
+  isRefreshingGs.value = false
+}
+
 function handleResetAllRaids() {
   if (confirm('Сбросить все чек-боксы рейдов? Все отмеченные рейды будут сняты.')) {
     charactersStore.resetAllRaidsCompleted()
@@ -86,10 +127,43 @@ function handleResetAllRaids() {
       <div class="dashboard-view__header-actions">
         <ViewModeToggle v-model="settingsStore.viewMode" />
         <button
+          v-if="isEditingMode"
+          class="dashboard-view__import-toggle"
+          @click="showImportModal = true"
+        >
+          <svg class="dashboard-view__import-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          Импорт из Оружейной
+          <span class="dashboard-view__beta-badge">Бета</span>
+        </button>
+        <button
+          v-if="!isEditingMode"
+          class="dashboard-view__gs-refresh-toggle"
+          :disabled="isGsRefreshing"
+          @click="openGearScoreRefreshModal"
+        >
+          <svg class="dashboard-view__gs-refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10" />
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+          Обновить ГС
+          <span class="dashboard-view__beta-badge">Бета</span>
+        </button>
+        <button
           class="dashboard-view__reset-toggle"
           @click="handleResetAllRaids"
         >
           Недельный сброс
+        </button>
+        <button
+          v-if="isEditingMode"
+          class="dashboard-view__add-toggle"
+          @click="handleAddCharacter"
+        >
+          Добавить персонажа
         </button>
         <button
           class="dashboard-view__edit-toggle"
@@ -97,12 +171,6 @@ function handleResetAllRaids() {
           @click="isEditingMode = !isEditingMode"
         >
           {{ isEditingMode ? '✓ Режим редактирования' : 'Режим редактирования' }}
-        </button>
-        <button
-          class="dashboard-view__add-toggle"
-          @click="handleAddCharacter"
-        >
-          + Добавить персонажа
         </button>
       </div>
     </div>
@@ -144,6 +212,23 @@ function handleResetAllRaids() {
       :character="selectedCharacter"
       @close="closeRaidModal"
     />
+
+    <!-- Import From Armory Modal -->
+    <ImportFromArmoryModal
+      v-if="showImportModal"
+      :existing-names="existingNames"
+      @close="showImportModal = false"
+      @imported="() => { showImportModal = false }"
+    />
+
+    <!-- Gear Score Refresh Modal -->
+    <GearScoreRefreshModal
+      v-if="showGearScoreRefreshModal"
+      @close="closeGearScoreRefreshModal"
+    />
+
+    <!-- Toast notifications -->
+    <ToastContainer ref="toastRef" />
   </div>
 </template>
 
@@ -198,18 +283,87 @@ function handleResetAllRaids() {
 
 .dashboard-view__add-toggle {
   padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  color: white;
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .dashboard-view__add-toggle:hover {
-  background-color: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  background-color: var(--color-surface-hover);
+}
+
+.dashboard-view__import-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-view__import-toggle:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.dashboard-view__import-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.dashboard-view__gs-refresh-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-view__gs-refresh-toggle:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+}
+
+.dashboard-view__gs-refresh-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dashboard-view__gs-refresh-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.dashboard-view__beta-badge {
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background-color: var(--color-warning);
+  color: var(--color-bg);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  line-height: 1.2;
 }
 
 .dashboard-view__header-actions {

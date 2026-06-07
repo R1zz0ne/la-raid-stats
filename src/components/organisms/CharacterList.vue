@@ -28,7 +28,7 @@ const charactersStore = useCharactersStore()
 // Drag and drop
 const charactersRef = computed(() => props.characters)
 
-const { isDragging, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
+const { isDragging, draggedId, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
   charactersRef,
   {
     onUpdate: (newOrder) => {
@@ -38,16 +38,16 @@ const { isDragging, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
   },
 )
 
-function onDragStart(event: DragEvent, index: number) {
-  handleDragStart(event, index)
+function onDragStart(event: DragEvent, id: string) {
+  handleDragStart(event, id)
 }
 
-function onDragOver(event: DragEvent, index: number) {
-  handleDragOver(event, index)
+function onDragOver(event: DragEvent) {
+  handleDragOver(event)
 }
 
-function onDrop(event: DragEvent, index: number) {
-  handleDrop(event, index)
+function onDrop(event: DragEvent, targetId: string) {
+  handleDrop(event, targetId)
 }
 
 // Reorder handler for table view
@@ -83,7 +83,7 @@ const otherCharacters = computed(() => {
           :class="{ 'character-list__grid--editing': editing, 'character-list__grid--dragging': isDragging }"
         >
           <CharacterCard
-            v-for="(character, index) in goldRecipients"
+            v-for="(character) in goldRecipients"
             :key="character.id"
             :character="character"
             :raids="charactersStore.getRaidsForCharacter(character.id)"
@@ -96,9 +96,9 @@ const otherCharacters = computed(() => {
             @toggle-raid="emit('toggleRaid', $event)"
             @remove-raid="emit('removeRaid', $event)"
             @toggle-gold-recipient="emit('toggleGoldRecipient', $event)"
-            @drag-start="onDragStart($event, index)"
-            @drag-over="onDragOver($event, index)"
-            @drop="onDrop($event, index)"
+            @drag-start="onDragStart($event, character.id)"
+            @drag-over="onDragOver($event)"
+            @drop="onDrop($event, character.id)"
           />
         </div>
       </div>
@@ -114,7 +114,7 @@ const otherCharacters = computed(() => {
           :class="{ 'character-list__grid--editing': editing, 'character-list__grid--dragging': isDragging }"
         >
           <CharacterCard
-            v-for="(character, index) in otherCharacters"
+            v-for="(character) in otherCharacters"
             :key="character.id"
             :character="character"
             :raids="charactersStore.getRaidsForCharacter(character.id)"
@@ -127,9 +127,9 @@ const otherCharacters = computed(() => {
             @toggle-raid="emit('toggleRaid', $event)"
             @remove-raid="emit('removeRaid', $event)"
             @toggle-gold-recipient="emit('toggleGoldRecipient', $event)"
-            @drag-start="onDragStart($event, index + goldRecipients.length)"
-            @drag-over="onDragOver($event, index + goldRecipients.length)"
-            @drop="onDrop($event, index + goldRecipients.length)"
+            @drag-start="onDragStart($event, character.id)"
+            @drag-over="onDragOver($event)"
+            @drop="onDrop($event, character.id)"
           />
         </div>
       </div>
@@ -137,7 +137,7 @@ const otherCharacters = computed(() => {
       <div v-if="characters.length === 0" class="character-list__empty">
         <p>Нет персонажей. Добавьте первого!</p>
         <BaseButton variant="primary" @click="emit('addCharacter')">
-          + Добавить персонажа
+          Добавить персонажа
         </BaseButton>
       </div>
     </template>

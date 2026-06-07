@@ -1,9 +1,10 @@
 // Lost Ark Raid Tracker - useDragDrop Composable
 // ==============================================
+// Uses character ID-based tracking for reliable drag-and-drop
 
 import { ref, type Ref } from 'vue'
 
-export interface UseDragDropOptions<T> {
+export interface UseDragDropOptions<T extends { id: string }> {
   onUpdate: (items: T[]) => void
   enabled?: Ref<boolean>
 }
@@ -11,17 +12,23 @@ export interface UseDragDropOptions<T> {
 export interface UseDragDropReturn {
   listId: string
   isDragging: Ref<boolean>
-  handleDragStart: (event: DragEvent, index: number) => void
-  handleDragOver: (event: DragEvent, index: number) => void
+  draggedId: Ref<string | null>
+  handleDragStart: (event: DragEvent, id: string) => void
+  handleDragOver: (event: DragEvent) => void
   handleDragEnd: () => void
-  handleDrop: (event: DragEvent, toIndex: number) => void
+  handleDrop: (event: DragEvent, targetId: string) => void
 }
 
 /**
- * Composable for drag-and-drop functionality
+ * Composable for drag-and-drop functionality using character IDs
  * Uses native HTML5 drag-and-drop API
+ * 
+ * Key features:
+ * - Tracks drag by character ID (not index) - more reliable with CSS grid
+ * - Finds actual position by looking up IDs in the items array
+ * - Simpler logic: source → target swap
  */
-export function useDragDrop<T>(
+export function useDragDrop<T extends { id: string }>(
   items: Ref<T[]>,
   options: UseDragDropOptions<T>,
 ): UseDragDropReturn {
@@ -29,26 +36,25 @@ export function useDragDrop<T>(
 
   const listId = `drag-drop-${Math.random().toString(36).substring(2, 9)}`
   const isDragging = ref(false)
-  const draggedIndex = ref<number | null>(null)
-  const dropTargetIndex = ref<number | null>(null)
+  const draggedId = ref<string | null>(null)
 
-  function handleDragStart(event: DragEvent, index: number): void {
+  function handleDragStart(event: DragEvent, id: string): void {
     if (enabled?.value === false) {
       event.preventDefault()
       return
     }
 
     isDragging.value = true
-    draggedIndex.value = index
+    draggedId.value = id
 
-    // Set drag data
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move'
-      event.dataTransfer.setData('text/plain', String(index))
+      event.dataTransfer.setData('application/character-id', id)
+      event.dataTransfer.setData('text/plain', id)
     }
   }
 
-  function handleDragOver(event: DragEvent, index: number): void {
+  function handleDragOver(event: DragEvent): void {
     if (enabled?.value === false) {
       return
     }
@@ -57,48 +63,57 @@ export function useDragDrop<T>(
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move'
     }
-    dropTargetIndex.value = index
   }
 
   function handleDragEnd(): void {
     isDragging.value = false
-    draggedIndex.value = null
-    dropTargetIndex.value = null
+    draggedId.value = null
   }
 
-  function handleDrop(event: DragEvent, toIndex: number): void {
+  function handleDrop(event: DragEvent, targetId: string): void {
     event.preventDefault()
 
     if (enabled?.value === false) {
-      return
-    }
-
-    const fromIndex = draggedIndex.value
-
-    if (fromIndex === null || fromIndex === toIndex) {
       handleDragEnd()
       return
     }
 
-    // Reorder items
-    const newItems = [...items.value]
-    const [movedItem] = newItems.splice(fromIndex, 1)
-    newItems.splice(toIndex, 0, movedItem)
+    const sourceId = draggedId.value
+
+    if (!sourceId || sourceId === targetId) {
+      handleDragEnd()
+      return
+    }
+
+    // Find positions by ID
+    const itemsCopy = [...items.value]
+    const fromIndex = itemsCopy.findIndex(item => item.id === sourceId)
+    const toIndex = itemsCopy.findIndex(item => item.id === targetId)
+
+    if (fromIndex === -1 || toIndex === -1) {
+      handleDragEnd()
+      return
+    }
+
+    // Swap items
+    const [movedItem] = itemsCopy.splice(fromIndex, 1)
+    itemsCopy.splice(toIndex, 0, movedItem)
 
     // Update order property if items have it
-    newItems.forEach((item, index) => {
+    itemsCopy.forEach((item, index) => {
       if (item && typeof item === 'object' && 'order' in item) {
         (item as Record<string, unknown>).order = index
       }
     })
 
-    onUpdate(newItems)
+    onUpdate(itemsCopy)
     handleDragEnd()
   }
 
   return {
     listId,
     isDragging,
+    draggedId,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
