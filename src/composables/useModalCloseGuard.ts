@@ -5,20 +5,33 @@
  * Prevents modal from closing when user drags/selects text from modal content to outside.
  * Only closes on explicit click on overlay.
  *
- * Uses CSS pointer-events approach:
- * - overlay is behind modal-content and clicks pass through it except on the visible background
- * - modal-content blocks pointer events on the overlay underneath it
+ * Tracks mouse state to detect if user was interacting with modal content
+ * (e.g., selecting text in input) when mouse is released outside.
  *
  * @param closeHandler - Function to call when modal should close
  */
 export function useModalCloseGuard(closeHandler: () => void) {
+  let isMouseDownOnContent = false
+
+  function onContentMouseDown() {
+    isMouseDownOnContent = true
+  }
+
+  function onContentMouseUp() {
+    isMouseDownOnContent = false
+  }
+
   function onOverlayClick() {
-    // Simple close - since overlay clicks pass through to content,
-    // clicking on the visible overlay background is intentional
-    closeHandler()
+    // Only close if mouse was NOT pressed down on modal content
+    // This prevents closing when user selects text and releases outside
+    if (!isMouseDownOnContent) {
+      closeHandler()
+    }
   }
 
   return {
     onOverlayClick,
+    onContentMouseDown,
+    onContentMouseUp,
   }
 }

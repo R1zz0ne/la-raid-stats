@@ -15,6 +15,7 @@ import {
   MAX_CHARACTERS,
   STORAGE_KEYS,
 } from '@/constants'
+import type { ArmoryCharacter } from '@/services/lostarkApi'
 
 export const useCharactersStore = defineStore('characters', () => {
   // State - use reactive for object/array
@@ -37,6 +38,22 @@ export const useCharactersStore = defineStore('characters', () => {
     const character = getCharacterById(characterId)
     if (!character) return false
     return character.gearScore >= requiredGearScore
+  }
+
+  // Check if a character's assigned raid is still valid (character has enough GS for that difficulty)
+  // Returns true if the character can still run this raid with their current gear score
+  function isRaidValidForCharacter(characterId: string, raidId: string, difficultyType: DifficultyType): boolean {
+    const character = getCharacterById(characterId)
+    if (!character) return false
+
+    const raidsStore = useRaidsStore()
+    const raid = raidsStore.getRaidById(raidId)
+    if (!raid) return false
+
+    const difficulty = raid.difficulties.find(d => d.type === difficultyType)
+    if (!difficulty) return false
+
+    return character.gearScore >= difficulty.requiredGearScore
   }
 
   // Get gold summary for a character
@@ -67,7 +84,7 @@ export const useCharactersStore = defineStore('characters', () => {
     }
   }
 
-  // Sorted characters (by order, then by creation order)
+  // Sorted characters (oldest first - lower order values at top)
   const sortedCharacters = computed(() => {
     return [..._characters].sort((a, b) => a.order - b.order)
   })
@@ -80,6 +97,53 @@ export const useCharactersStore = defineStore('characters', () => {
   // Count gold recipients
   function goldRecipientCount(): number {
     return _characters.filter(c => c.isGoldRecipient).length
+  }
+
+  // Import characters from armory (batch operation)
+  // Updates existing characters and adds new ones
+  // API returns characters from newest to oldest, so we process in reverse
+  // to assign correct order (oldest first in list)
+  function importFromArmory(
+    characters: ArmoryCharacter[],
+    gearScores: Map<string, number> = new Map()
+  ): { added: number; updated: number } {
+    let added = 0
+    let updated = 0
+
+    // Process in reverse to match modal display order (oldest first)
+    const reversed = [...characters].reverse()
+
+    for (const char of reversed) {
+      const existingIndex = _characters.findIndex(c => c.id === char.name)
+      const gs = gearScores.get(char.name) ?? 0
+
+      if (existingIndex !== -1) {
+        // Update existing character
+        if (gs > 0) {
+          _characters[existingIndex].gearScore = gs
+        }
+        _characters[existingIndex].characterClass = char.characterClass
+        updated++
+      } else {
+        // Add new character at the END of the array
+        const character: Character = {
+          id: char.name,
+          name: char.name,
+          gearScore: gs,
+          characterClass: char.characterClass,
+          order: _characters.length,
+          isGoldRecipient: goldRecipientCount() < 6,
+        }
+        _characters.push(character)
+        added++
+      }
+    }
+
+    if (added > 0 || updated > 0) {
+      persistToStorage()
+    }
+
+    return { added, updated }
   }
 
   // Actions
@@ -157,6 +221,24 @@ export const useCharactersStore = defineStore('characters', () => {
     if (data.isGoldRecipient !== undefined) {
       character.isGoldRecipient = data.isGoldRecipient
     }
+
+    persistToStorage()
+  }
+
+  // Update gear score for a character
+  function updateCharacterGearScore(name: string, gearScore: number): void {
+    const index = _characters.findIndex(c => c.id === name)
+    if (index === -1) {
+      return
+    }
+
+    // Update the object
+    const char = _characters[index]
+    char.gearScore = gearScore
+
+    // Force reactivity by reassigning
+    const updated = [..._characters]
+    _characters.splice(0, _characters.length, ...updated)
 
     persistToStorage()
   }
@@ -355,9 +437,11 @@ export const useCharactersStore = defineStore('characters', () => {
     getRaidsForCharacter,
     getGoldSummary,
     isCharacterGearScoreEnough,
+    isRaidValidForCharacter,
     toggleGoldRecipient,
     addCharacter,
     updateCharacter,
+    updateCharacterGearScore,
     deleteCharacter,
     addCharacterRaid,
     updateCharacterRaid,
@@ -369,5 +453,6 @@ export const useCharactersStore = defineStore('characters', () => {
     importData,
     cascadeDeleteRaid,
     removeOrphanedRaids,
+    importFromArmory,
   }
 })

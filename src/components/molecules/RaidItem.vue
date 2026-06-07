@@ -10,6 +10,7 @@ const props = defineProps<{
   isCompleted: boolean
   disabled?: boolean
   disabledReason?: string
+  isGsInvalid?: boolean
   editing?: boolean
 }>()
 
@@ -26,11 +27,15 @@ const difficulty = computed(() => {
 <template>
   <div
     class="raid-item"
-    :class="{ 'raid-item--completed': isCompleted, 'raid-item--disabled': disabled }"
+    :class="{ 
+      'raid-item--completed': isCompleted, 
+      'raid-item--disabled': disabled,
+      'raid-item--gs-invalid': isGsInvalid
+    }"
   >
     <BaseCheckbox
       :model-value="isCompleted"
-      :disabled="disabled || editing"
+      :disabled="disabled || editing || isGsInvalid"
       @update:model-value="emit('toggle')"
     />
 
@@ -81,6 +86,12 @@ const difficulty = computed(() => {
 
 .raid-item--disabled {
   opacity: 0.6;
+}
+
+.raid-item--gs-invalid {
+  background-color: var(--color-danger-light) !important;
+  border-color: var(--color-danger) !important;
+  opacity: 0.8;
 }
 
 .raid-item__info {

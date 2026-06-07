@@ -26,13 +26,22 @@ const emit = defineEmits<{
   toggleRaid: [raidId: string]
   removeRaid: [raidId: string]
   toggleGoldRecipient: [id: string]
-  dragStart: [event: DragEvent, index: number]
-  dragOver: [event: DragEvent, index: number]
-  drop: [event: DragEvent, index: number]
+  dragStart: [event: DragEvent]
+  dragOver: [event: DragEvent]
+  drop: [event: DragEvent]
 }>()
 
 const raidsStore = useRaidsStore()
 const charactersStore = useCharactersStore()
+
+// Check if a raid is valid for the character's current gear score
+function isRaidGsValid(raidId: string, difficultyType: string): boolean {
+  return charactersStore.isRaidValidForCharacter(
+    props.character.id,
+    raidId,
+    difficultyType as 'solo' | 'normal' | 'heroic' | 'nightmare'
+  )
+}
 
 const displayClass = computed(() => {
   if (props.character.characterClass === 'custom' && props.character.customClassName) {
@@ -92,9 +101,9 @@ const isAllCompleted = computed(() =>
     }"
     :draggable="draggable"
     :data-testid="`character-card-${character.id}`"
-    @dragstart="emit('dragStart', $event, 0)"
-    @dragover="emit('dragOver', $event, 0)"
-    @drop="emit('drop', $event, 0)"
+    @dragstart="emit('dragStart', $event)"
+    @dragover="emit('dragOver', $event)"
+    @drop="emit('drop', $event)"
   >
     <div class="character-card__header">
       <div class="character-card__info">
@@ -137,6 +146,7 @@ const isAllCompleted = computed(() =>
           :raid="item.raid!"
           :difficulty-type="item.characterRaid.difficultyType"
           :is-completed="item.characterRaid.isCompleted"
+          :is-gs-invalid="!isRaidGsValid(item.raid!.id, item.characterRaid.difficultyType)"
           :editing="editing"
           :compact="true"
           @toggle="emit('toggleRaid', item.characterRaid.id)"

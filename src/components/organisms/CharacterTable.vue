@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { Character, CharacterRaid, GoldSummary, Raid } from '@/types'
+import type { Character, CharacterRaid, GoldSummary, Raid, DifficultyType } from '@/types'
 import { getClassLabel } from '@/constants/characterClasses'
 import { getClassIcon } from '@/constants/classIcons'
 import { MAX_GOLD_RECIPIENTS, MAX_RAIDS_PER_CHARACTER } from '@/constants'
@@ -157,6 +157,11 @@ function getClassIconPath(character: Character): string | undefined {
 function isGoldRecipient(character: Character): boolean {
   return character.isGoldRecipient ?? false
 }
+
+// Check if a raid is valid for a character's current gear score
+function isRaidGsValid(characterId: string, raidId: string, difficultyType: DifficultyType): boolean {
+  return charactersStore.isRaidValidForCharacter(characterId, raidId, difficultyType)
+}
 </script>
 
 <template>
@@ -222,12 +227,15 @@ function isGoldRecipient(character: Character): boolean {
                   v-for="cr in getSortedRaidsForCharacter(character.id)"
                   :key="cr.id"
                   class="character-table__raid-chip"
-                  :class="{ 'character-table__raid-chip--completed': cr.isCompleted }"
+                  :class="{ 
+                    'character-table__raid-chip--completed': cr.isCompleted,
+                    'character-table__raid-chip--gs-invalid': !isRaidGsValid(character.id, cr.raidId, cr.difficultyType)
+                  }"
                   :title="`${getRaidById(cr.raidId)?.name ?? ''} (${cr.difficultyType})`"
                 >
                   <BaseCheckbox
                     :model-value="cr.isCompleted"
-                    :disabled="editing"
+                    :disabled="editing || !isRaidGsValid(character.id, cr.raidId, cr.difficultyType)"
                     @update:model-value="emit('toggleRaid', cr.id)"
                   />
                   <span class="character-table__raid-label">{{ getRaidById(cr.raidId)?.name ?? '' }}</span>
@@ -348,11 +356,14 @@ function isGoldRecipient(character: Character): boolean {
                   v-for="cr in getSortedRaidsForCharacter(character.id)"
                   :key="cr.id"
                   class="character-table__raid-chip"
-                  :class="{ 'character-table__raid-chip--completed': cr.isCompleted }"
+                  :class="{ 
+                    'character-table__raid-chip--completed': cr.isCompleted,
+                    'character-table__raid-chip--gs-invalid': !isRaidGsValid(character.id, cr.raidId, cr.difficultyType)
+                  }"
                 >
                   <BaseCheckbox
                     :model-value="cr.isCompleted"
-                    :disabled="editing"
+                    :disabled="editing || !isRaidGsValid(character.id, cr.raidId, cr.difficultyType)"
                     @update:model-value="emit('toggleRaid', cr.id)"
                   />
                   <span class="character-table__raid-label">{{ getRaidById(cr.raidId)?.name ?? '' }}</span>
@@ -418,7 +429,7 @@ function isGoldRecipient(character: Character): boolean {
           <td colspan="100" class="character-table__empty">
             <p>Нет персонажей. Добавьте первого!</p>
             <BaseButton variant="primary" @click="emit('addCharacter')">
-              + Добавить персонажа
+              Добавить персонажа
             </BaseButton>
           </td>
         </tr>
@@ -600,6 +611,12 @@ function isGoldRecipient(character: Character): boolean {
 .character-table__raid-chip--completed {
   opacity: 0.7;
   background-color: var(--color-surface-darker);
+}
+
+.character-table__raid-chip--gs-invalid {
+  background-color: var(--color-danger-light) !important;
+  border-color: var(--color-danger) !important;
+  opacity: 0.8;
 }
 
 /* BaseCheckbox inside chip — compact version */
