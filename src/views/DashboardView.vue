@@ -94,7 +94,6 @@ function handleToggleGoldRecipient(characterId: string) {
 
 // Gear score refresh modal
 const showGearScoreRefreshModal = ref(false)
-const isRefreshingGs = ref(false)
 
 function openGearScoreRefreshModal() {
   showGearScoreRefreshModal.value = true
@@ -104,14 +103,7 @@ function closeGearScoreRefreshModal() {
   showGearScoreRefreshModal.value = false
 }
 
-function onGearScoreRefreshStart() {
-  isRefreshingGs.value = true
-  closeGearScoreRefreshModal()
-}
 
-function onGearScoreRefreshComplete() {
-  isRefreshingGs.value = false
-}
 
 function handleResetAllRaids() {
   if (confirm('Сбросить все чек-боксы рейдов? Все отмеченные рейды будут сняты.')) {

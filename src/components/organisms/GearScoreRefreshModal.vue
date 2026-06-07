@@ -20,6 +20,7 @@ const emit = defineEmits<{
 
 const charactersStore = useCharactersStore()
 const {
+  isRefreshing,
   selectedNames,
   selectedCount,
   canRefresh,

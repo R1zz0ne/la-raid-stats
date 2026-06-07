@@ -28,7 +28,7 @@ const charactersStore = useCharactersStore()
 // Drag and drop
 const charactersRef = computed(() => props.characters)
 
-const { isDragging, draggedId, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
+const { isDragging, handleDragStart, handleDragOver, handleDrop } = useDragDrop(
   charactersRef,
   {
     onUpdate: (newOrder) => {
