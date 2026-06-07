@@ -66,15 +66,17 @@ const difficulty = computed(() => {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
 
-.raid-item--completed {
-  opacity: 0.8;
+.raid-item:not(.raid-item--completed) {
   background-color: var(--color-surface-hover);
+}
+
+.raid-item--completed {
+  opacity: 0.7;
 }
 
 .raid-item--disabled {
@@ -150,5 +152,9 @@ const difficulty = computed(() => {
   padding: 2px 6px;
   font-size: 10px;
   min-height: 16px;
+}
+
+.raid-item--completed {
+  background-color: var(--color-surface-darker);
 }
 </style>

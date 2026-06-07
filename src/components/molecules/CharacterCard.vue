@@ -70,6 +70,10 @@ const isGoldRecipient = computed({
     }
   }
 })
+
+const isAllCompleted = computed(() => 
+  props.raids.length > 0 && props.raids.every(r => r.isCompleted)
+)
 </script>
 
 <template>
@@ -77,7 +81,8 @@ const isGoldRecipient = computed({
     class="character-card"
     :class="{
       'character-card--editing': editing,
-      'character-card--gold-recipient': isGoldRecipient
+      'character-card--gold-recipient': isGoldRecipient,
+      'character-card--all-completed': isAllCompleted
     }"
     :draggable="draggable"
     :data-testid="`character-card-${character.id}`"
@@ -168,6 +173,11 @@ const isGoldRecipient = computed({
 .character-card--gold-recipient {
   border-color: var(--color-gold);
   box-shadow: 0 0 0 1px var(--color-gold);
+}
+
+.character-card--gold-recipient.character-card--all-completed {
+  border-color: var(--color-success);
+  box-shadow: 0 0 0 1px var(--color-success);
 }
 
 .character-card--editing {

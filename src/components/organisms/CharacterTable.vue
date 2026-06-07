@@ -136,6 +136,11 @@ function getRaidById(raidId: string): Raid | undefined {
   return raidsStore.getRaidById(raidId)
 }
 
+function isCharacterAllCompleted(characterId: string): boolean {
+  const raids = getRaidsForCharacter(characterId)
+  return raids.length > 0 && raids.every(r => r.isCompleted)
+}
+
 function getDisplayClass(character: Character): string {
   if (character.characterClass === 'custom' && character.customClassName) {
     return character.customClassName
@@ -181,7 +186,8 @@ function isGoldRecipient(character: Character): boolean {
             :class="{
               'character-table__row--dragging': draggedCharacterId === character.id,
               'character-table__row--drag-over': dropTargetCharacterId === character.id && canDropTo(character.id),
-              'character-table__row--drag-invalid': dropTargetCharacterId === character.id && !canDropTo(character.id)
+              'character-table__row--drag-invalid': dropTargetCharacterId === character.id && !canDropTo(character.id),
+              'character-table__row--all-completed': isCharacterAllCompleted(character.id)
             }"
             :data-testid="`character-row-${character.id}`"
             @dragover="editing && handleDragOver($event, character.id)"
@@ -459,6 +465,10 @@ function isGoldRecipient(character: Character): boolean {
   border-left: 3px solid var(--color-gold);
 }
 
+.character-table__row--gold.character-table__row--all-completed {
+  border-left: 3px solid var(--color-success);
+}
+
 .character-table__row--gold-summary {
   background-color: var(--color-surface-hover);
   border-left: 3px solid var(--color-gold);
@@ -546,7 +556,7 @@ function isGoldRecipient(character: Character): boolean {
 
 .character-table__raid-chip--completed {
   opacity: 0.7;
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-darker);
 }
 
 /* BaseCheckbox inside chip — compact version */
