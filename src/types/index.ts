@@ -40,6 +40,9 @@ export type CharacterClass =
 // Theme
 export type Theme = 'light' | 'dark'
 
+// View mode for character list
+export type ViewMode = 'cards' | 'table'
+
 // Character - id equals name (unique)
 export interface Character {
   id: string // equals name

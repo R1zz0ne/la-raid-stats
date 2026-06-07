@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCharactersStore } from '@/stores/characters'
+import { useSettingsStore } from '@/stores/settings'
 import { useModalManager } from '@/composables/useModalManager'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
 import CharacterList from '@/components/organisms/CharacterList.vue'
 import CharacterForm from '@/components/organisms/CharacterForm.vue'
 import RaidAssignmentModal from '@/components/organisms/RaidAssignmentModal.vue'
 import GoldProgress from '@/components/molecules/GoldProgress.vue'
+import ViewModeToggle from '@/components/molecules/ViewModeToggle.vue'
 
 const charactersStore = useCharactersStore()
+const settingsStore = useSettingsStore()
 
 // Editing state
 const isEditingMode = ref(false)
@@ -78,9 +81,10 @@ function handleResetAllRaids() {
 
 <template>
   <div class="dashboard-view">
-    <div class="dashboard-view__header">
+    <div class="dashboard-view__header" :class="{ 'dashboard-view__header--sticky': isEditingMode }">
       <h1>Персонажи ({{ charactersStore.characters.length }})</h1>
       <div class="dashboard-view__header-actions">
+        <ViewModeToggle v-model="settingsStore.viewMode" />
         <button
           class="dashboard-view__reset-toggle"
           @click="handleResetAllRaids"
@@ -92,7 +96,7 @@ function handleResetAllRaids() {
           :class="{ 'dashboard-view__edit-toggle--active': isEditingMode }"
           @click="isEditingMode = !isEditingMode"
         >
-          {{ isEditingMode ? '✓ Режим редактирования' : 'Редактировать порядок' }}
+          {{ isEditingMode ? '✓ Режим редактирования' : 'Режим редактирования' }}
         </button>
         <button
           class="dashboard-view__add-toggle"
@@ -108,6 +112,7 @@ function handleResetAllRaids() {
     <CharacterList
       :characters="charactersStore.sortedCharacters"
       :editing="isEditingMode"
+      :view-mode="settingsStore.viewMode"
       @add-character="handleAddCharacter"
       @edit-character="handleEditCharacter"
       @delete-character="handleDeleteCharacter"
@@ -125,7 +130,7 @@ function handleResetAllRaids() {
         <div class="modal-content">
           <CharacterForm
             :character="editingCharacter"
-            :existing-names="editingCharacter ? [] : existingNames"
+            :existing-names="existingNames"
             @submit="submitCharacterForm"
             @cancel="closeCharacterForm"
           />
@@ -152,7 +157,17 @@ function handleResetAllRaids() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-lg);
+  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.dashboard-view__header--sticky {
+  position: sticky;
+  top: 72px;
+  z-index: 50;
+  background-color: var(--color-bg);
+  box-shadow: 0 0 0 1px var(--color-bg);
 }
 
 .dashboard-view__header h1 {

@@ -77,9 +77,10 @@ export function useModalManager(options: UseModalManagerOptions = {}): UseModalM
     editingCharacter.value = undefined
   }
 
-  function submitCharacterForm(data: CharacterFormData): void {
+  function submitCharacterForm(data: CharacterFormData, _oldName?: string): void {
     if (editingCharacter.value) {
       charactersStore.updateCharacter(editingCharacter.value.id, {
+        name: data.name,
         gearScore: data.gearScore,
         characterClass: data.characterClass,
         customClassName: data.customClassName,

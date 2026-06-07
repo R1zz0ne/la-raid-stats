@@ -9,13 +9,14 @@ import type { DifficultyType } from '@/types'
  * 
  * One raid can have only one difficulty selected at a time.
  * Selecting a different difficulty replaces the previous one for that raid.
+ * Supports optional max selection limit.
  * 
  * @example
  * ```ts
  * const { selectedRaids, toggleSelection, isSelected, clearSelection, confirmSelection } = useRaidSelection()
  * ```
  */
-export function useRaidSelection() {
+export function useRaidSelection(maxSelection?: number) {
   // Private source of truth
   const _selectedRaids = ref<Array<{ raidId: string; difficultyType: DifficultyType }>>([])
 
@@ -25,9 +26,13 @@ export function useRaidSelection() {
   // Public readonly selections (derived for read-only access)
   const selectedRaids = computed(() => _selectedRaids.value.map(r => ({ ...r })))
 
-  /**
-   * Check if a specific raid+difficulty combination is selected
-   */
+  // Check if selection limit reached
+  const isLimitReached = computed(() => {
+    if (maxSelection === undefined) return false
+    return _selectedRaids.value.length >= maxSelection
+  })
+
+  // Check if a specific raid+difficulty combination is selected
   function isSelected(raidId: string, difficultyType: DifficultyType): boolean {
     return _selectedRaids.value.some(
       r => r.raidId === raidId && r.difficultyType === difficultyType
@@ -38,6 +43,7 @@ export function useRaidSelection() {
    * Toggle selection for a raid+difficulty.
    * - If already selected: deselect it
    * - If not selected: replace any existing selection for this raid and add new one
+   * - Respects maxSelection limit if provided
    */
   function toggleSelection(raidId: string, difficultyType: DifficultyType) {
     const existingIndex = _selectedRaids.value.findIndex(
@@ -48,12 +54,22 @@ export function useRaidSelection() {
       // Clicking already selected difficulty - deselect it
       _selectedRaids.value.splice(existingIndex, 1)
     } else {
-      // Remove any other difficulty for this raid first
-      _selectedRaids.value = _selectedRaids.value.filter(
-        r => r.raidId !== raidId
+      // Check if this raid is already selected (switching difficulty)
+      const existingRaidIndex = _selectedRaids.value.findIndex(
+        r => r.raidId === raidId
       )
-      // Then add the new selection
-      _selectedRaids.value.push({ raidId, difficultyType })
+
+      if (existingRaidIndex >= 0) {
+        // Raid already selected - just switch difficulty (doesn't add new raid)
+        _selectedRaids.value.splice(existingRaidIndex, 1)
+        _selectedRaids.value.push({ raidId, difficultyType })
+      } else if (isLimitReached.value) {
+        // Selection limit reached - do nothing
+        return
+      } else {
+        // Add new raid selection
+        _selectedRaids.value.push({ raidId, difficultyType })
+      }
     }
   }
 
@@ -83,6 +99,7 @@ export function useRaidSelection() {
     // State (readonly for external access)
     selectedRaids,
     selectedCount,
+    isLimitReached,
 
     // Actions
     isSelected,

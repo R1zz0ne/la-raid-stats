@@ -12,6 +12,7 @@
  */
 import { computed, onMounted, onUnmounted } from 'vue'
 import type { Character, Raid, DifficultyType } from '@/types'
+import { MAX_RAIDS_PER_CHARACTER } from '@/constants'
 import { useCharactersStore } from '@/stores/characters'
 import { useRaidsStore } from '@/stores/raids'
 import { useModalCloseGuard } from '@/composables/useModalCloseGuard'
@@ -42,15 +43,6 @@ onUnmounted(() => {
   document.body.classList.remove('body-no-scroll')
 })
 
-// Raid selection state
-const {
-  selectedRaids,
-  selectedCount,
-  isSelected,
-  toggleSelection,
-  clearSelection,
-} = useRaidSelection()
-
 // Get already assigned raid IDs for this character
 const assignedRaidIds = computed(() => {
   if (!props.character) return new Set<string>()
@@ -59,6 +51,20 @@ const assignedRaidIds = computed(() => {
       .map(cr => cr.raidId)
   )
 })
+
+// Calculate remaining raid slots for this character
+const maxRaids = MAX_RAIDS_PER_CHARACTER
+const assignedCount = computed(() => assignedRaidIds.value.size)
+const remainingSlots = computed(() => maxRaids - assignedCount.value)
+
+// Raid selection state with limit
+const {
+  selectedRaids,
+  selectedCount,
+  isSelected,
+  toggleSelection,
+  clearSelection,
+} = useRaidSelection(remainingSlots.value)
 
 // Available raids: filtered by GS, sorted (newest first)
 const availableRaids = computed(() => {
@@ -180,7 +186,13 @@ function handleClose() {
 
           <footer class="raid-assignment__actions">
             <span v-if="selectedCount > 0" class="raid-assignment__selected-info">
-              Выбрано: {{ selectedCount }}
+              Выбрано: {{ selectedCount }} из {{ remainingSlots }}
+            </span>
+            <span v-else-if="remainingSlots === 0" class="raid-assignment__selected-info raid-assignment__selected-info--limit">
+              Все слоты заняты ({{ maxRaids }} рейдов)
+            </span>
+            <span v-else class="raid-assignment__selected-info">
+              Свободно слотов: {{ remainingSlots }}
             </span>
             <BaseButton
               variant="secondary"
@@ -345,5 +357,9 @@ function handleClose() {
   font-size: var(--text-sm);
   color: var(--color-primary);
   font-weight: 500;
+}
+
+.raid-assignment__selected-info--limit {
+  color: var(--color-warning);
 }
 </style>

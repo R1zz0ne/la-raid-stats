@@ -119,11 +119,28 @@ export const useCharactersStore = defineStore('characters', () => {
     persistToStorage()
   }
 
-  function updateCharacter(id: string, data: Partial<Pick<Character, 'gearScore' | 'characterClass' | 'customClassName' | 'isGoldRecipient'>>): void {
+  function updateCharacter(id: string, data: Partial<Pick<Character, 'gearScore' | 'characterClass' | 'customClassName' | 'isGoldRecipient' | 'name'>>): void {
     const index = _characters.findIndex(c => c.id === id)
     if (index === -1) return
 
     const character = _characters[index]
+
+    if (data.name !== undefined) {
+      const trimmedName = data.name.trim()
+      // Only update if name actually changed
+      if (trimmedName && trimmedName !== id) {
+        character.name = trimmedName
+        character.id = trimmedName
+
+        // Update all related characterRaids
+        for (const cr of _characterRaids) {
+          if (cr.characterId === id) {
+            cr.characterId = trimmedName
+          }
+        }
+        persistCharacterRaidsToStorage()
+      }
+    }
 
     if (data.gearScore !== undefined) {
       character.gearScore = data.gearScore
