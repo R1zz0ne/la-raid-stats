@@ -147,4 +147,57 @@ describe('useSettingsStore', () => {
       expect(typeof store.loadFromStorage).toBe('function')
     })
   })
+
+  describe('viewMode', () => {
+    it('starts with cards view mode', () => {
+      const store = useSettingsStore()
+      expect(store.viewMode).toBe('cards')
+    })
+
+    it('has viewMode getter', () => {
+      const store = useSettingsStore()
+      expect(store.viewMode).toBeDefined()
+    })
+
+    it('has setViewMode method', () => {
+      const store = useSettingsStore()
+      expect(typeof store.setViewMode).toBe('function')
+    })
+
+    describe('setViewMode', () => {
+      it('changes viewMode to table', () => {
+        const store = useSettingsStore()
+        store.setViewMode('table')
+        expect(store.viewMode).toBe('table')
+      })
+
+      it('changes viewMode back to cards', () => {
+        const store = useSettingsStore()
+        store.setViewMode('table')
+        store.setViewMode('cards')
+        expect(store.viewMode).toBe('cards')
+      })
+    })
+
+    describe('loadFromStorage with viewMode', () => {
+      it('loads valid viewMode from localStorage', () => {
+        localStorageMock.getItem.mockReturnValue(JSON.stringify({ viewMode: 'table' }))
+
+        const store = useSettingsStore()
+        store.loadFromStorage()
+
+        expect(store.viewMode).toBe('table')
+      })
+
+      it('loads both theme and viewMode from localStorage', () => {
+        localStorageMock.getItem.mockReturnValue(JSON.stringify({ theme: 'dark', viewMode: 'table' }))
+
+        const store = useSettingsStore()
+        store.loadFromStorage()
+
+        expect(store.isDark).toBe(true)
+        expect(store.viewMode).toBe('table')
+      })
+    })
+  })
 })

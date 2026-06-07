@@ -90,40 +90,24 @@ const isGoldRecipient = computed({
         <div class="character-card__identity">
           <span class="character-card__name" :data-testid="`character-name-${character.id}`">{{ character.name }}</span>
           <span class="character-card__class">{{ displayClass }}</span>
-          <!-- Gold recipient toggle - only in edit mode -->
-          <div v-if="editing" class="character-card__gold-checkbox">
-            <BaseCheckbox
-              v-model="isGoldRecipient"
-              label="Получатель золота"
-              :disabled="!isGoldRecipient && charactersStore.goldRecipientCount() >= 6"
-            />
-          </div>
-          
-          <span class="character-card__gs">ГС: {{ character.gearScore.toLocaleString('ru-RU') }}</span>
         </div>
+        <span class="character-card__gs">ГС: {{ character.gearScore.toLocaleString('ru-RU') }}</span>
       </div>
 
       <div v-if="editing" class="character-card__actions">
-        <BaseButton variant="secondary" :data-testid="`edit-btn-${character.id}`" @click="emit('edit', character.id)">
-          Редактировать
-        </BaseButton>
-        <BaseButton variant="danger" :data-testid="`delete-btn-${character.id}`" @click="emit('delete', character.id)">
-          Удалить
-        </BaseButton>
+        <BaseCheckbox
+          v-model="isGoldRecipient"
+          variant="toggle"
+          title="Получатель золота"
+          :disabled="!isGoldRecipient && charactersStore.goldRecipientCount() >= 6"
+        />
+        <BaseButton variant="secondary" :data-testid="`edit-btn-${character.id}`" title="Редактировать" @click="emit('edit', character.id)">✎</BaseButton>
+        <BaseButton variant="danger" :data-testid="`delete-btn-${character.id}`" title="Удалить" @click="emit('delete', character.id)">✕</BaseButton>
       </div>
-
-      <BaseButton
-        v-else-if="raids.length < MAX_RAIDS_PER_CHARACTER"
-        variant="primary"
-        :data-testid="`add-raid-btn-${character.id}`"
-        @click="emit('addRaid', character.id)"
-      >
-        + Рейд
-      </BaseButton>
     </div>
 
     <div class="character-card__raids">
-      <template v-if="sortedRaids.length > 0">
+      <div v-if="sortedRaids.length > 0" class="character-card__raids-list">
         <RaidItem
           v-for="item in sortedRaids"
           :key="item.characterRaid.id"
@@ -131,17 +115,36 @@ const isGoldRecipient = computed({
           :difficulty-type="item.characterRaid.difficultyType"
           :is-completed="item.characterRaid.isCompleted"
           :editing="editing"
+          :compact="true"
           @toggle="emit('toggleRaid', item.characterRaid.id)"
           @remove="emit('removeRaid', item.characterRaid.id)"
         />
-      </template>
+        <button
+          v-if="editing && raids.length < MAX_RAIDS_PER_CHARACTER"
+          type="button"
+          class="character-card__add-raid-btn"
+          title="Добавить рейд"
+          @click="emit('addRaid', character.id)"
+        >
+          + Добавить рейд
+        </button>
+      </div>
 
       <div v-else class="character-card__empty">
         <p>Нет назначенных рейдов</p>
+        <button
+          v-if="editing && raids.length < MAX_RAIDS_PER_CHARACTER"
+          type="button"
+          class="character-card__add-raid-btn"
+          title="Добавить рейд"
+          @click="emit('addRaid', character.id)"
+        >
+          + Добавить рейд
+        </button>
       </div>
     </div>
 
-    <div v-if="isGoldRecipient" class="character-card__footer">
+    <div v-if="isGoldRecipient && !editing" class="character-card__footer">
       <GoldSummaryCard
         :regular="goldSummary.regular"
         :limited="goldSummary.limited"
@@ -231,6 +234,53 @@ const isGoldRecipient = computed({
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
+  min-height: 60px;
+}
+
+.character-card__raids-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.character-card__raids-list > :deep(.raid-item) {
+  border: none;
+  border-radius: 0;
+}
+
+.character-card__raids-list > :deep(.raid-item:first-child) {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.character-card__raids-list > :deep(.raid-item:last-of-type) {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+.character-card__add-raid-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-surface-hover);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.character-card__add-raid-btn:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 .character-card__empty {
@@ -240,6 +290,9 @@ const isGoldRecipient = computed({
   font-size: var(--text-sm);
   background-color: var(--color-surface-hover);
   border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
 }
 
 .character-card__footer {

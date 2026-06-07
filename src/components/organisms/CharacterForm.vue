@@ -13,9 +13,12 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [data: CharacterFormData]
+  submit: [data: CharacterFormData, oldName?: string]
   cancel: []
 }>()
+
+// Store current name when editing (for updating related data)
+const currentName = ref(props.character?.name)
 
 // Form state
 const name = ref(props.character?.name ?? '')
@@ -28,11 +31,13 @@ const touched = ref(false)
 watch(() => props.character, (newChar) => {
   if (newChar) {
     name.value = newChar.name
+    currentName.value = newChar.name
     gearScoreStr.value = String(newChar.gearScore)
     characterClass.value = newChar.characterClass
     customClassName.value = newChar.customClassName ?? ''
   } else {
     name.value = ''
+    currentName.value = ''
     gearScoreStr.value = '0'
     characterClass.value = ''
     customClassName.value = ''
@@ -58,8 +63,9 @@ const nameError = computed(() => {
 
   const trimmedName = name.value.trim()
 
-  // Check for duplicate name
-  if (trimmedName && !isEditing.value && props.existingNames?.includes(trimmedName)) {
+  // Check for duplicate name (exclude current name when editing)
+  const otherNames = props.existingNames?.filter(n => n !== currentName.value) ?? []
+  if (trimmedName && otherNames.includes(trimmedName)) {
     return 'Персонаж с таким именем уже существует'
   }
 
@@ -90,8 +96,9 @@ function handleSubmit() {
 
   const trimmedName = name.value.trim()
 
-  // Check for duplicate name before validation
-  if (!isEditing.value && props.existingNames?.includes(trimmedName)) {
+  // Check for duplicate name before validation (exclude current name when editing)
+  const otherNames = props.existingNames?.filter(n => n !== currentName.value) ?? []
+  if (trimmedName && otherNames.includes(trimmedName)) {
     return
   }
 
@@ -108,7 +115,8 @@ function handleSubmit() {
     return
   }
 
-  emit('submit', data)
+  // Emit old name when editing for updating related data
+  emit('submit', data, isEditing.value ? currentName.value : undefined)
 }
 
 // Cancel handler
@@ -130,7 +138,6 @@ function handleCancel() {
         placeholder="Имя персонажа"
         label="Имя"
         :error="nameError"
-        :disabled="isEditing"
         id="character-name"
       />
 

@@ -30,7 +30,7 @@ const difficulty = computed(() => {
   >
     <BaseCheckbox
       :model-value="isCompleted"
-      :disabled="disabled"
+      :disabled="disabled || editing"
       @update:model-value="emit('toggle')"
     />
 
@@ -114,8 +114,8 @@ const difficulty = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: none;
   border-radius: var(--radius-sm);
   background-color: transparent;
