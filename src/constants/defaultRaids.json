@@ -9,19 +9,19 @@
           "type": "solo",
           "requiredGearScore": 1620,
           "regularGold": 0,
-          "limitedGold": 9100
+          "limitedGold": 6100
         },
         {
           "type": "normal",
           "requiredGearScore": 1620,
-          "regularGold": 4550,
-          "limitedGold": 4550
+          "regularGold": 0,
+          "limitedGold": 6100
         },
         {
           "type": "heroic",
           "requiredGearScore": 1630,
-          "regularGold": 4900,
-          "limitedGold": 6300
+          "regularGold": 3600,
+          "limitedGold": 3600
         }
       ]
     },
@@ -32,8 +32,8 @@
         {
           "type": "normal",
           "requiredGearScore": 1620,
-          "regularGold": 4550,
-          "limitedGold": 4550
+          "regularGold": 3600,
+          "limitedGold": 3600
         }
       ]
     },
@@ -44,20 +44,20 @@
         {
           "type": "solo",
           "requiredGearScore": 1660,
-          "regularGold": 0,
-          "limitedGold": 16800
+          "regularGold": 5750,
+          "limitedGold": 5750
         },
         {
           "type": "normal",
           "requiredGearScore": 1660,
-          "regularGold": 8400,
-          "limitedGold": 8400
+          "regularGold": 5750,
+          "limitedGold": 5750
         },
         {
           "type": "heroic",
           "requiredGearScore": 1680,
-          "regularGold": 10500,
-          "limitedGold": 10500
+          "regularGold": 9000,
+          "limitedGold": 9000
         }
       ]
     },
@@ -68,20 +68,20 @@
         {
           "type": "solo",
           "requiredGearScore": 1670,
-          "regularGold": 0,
-          "limitedGold": 19250
+          "regularGold": 8250,
+          "limitedGold": 8250
         },
         {
           "type": "normal",
           "requiredGearScore": 1670,
-          "regularGold": 9625,
-          "limitedGold": 9625
+          "regularGold": 8250,
+          "limitedGold": 8250
         },
         {
           "type": "heroic",
           "requiredGearScore": 1690,
-          "regularGold": 11900,
-          "limitedGold": 11900
+          "regularGold": 11500,
+          "limitedGold": 11500
         }
       ]
     },
@@ -92,20 +92,20 @@
         {
           "type": "solo",
           "requiredGearScore": 1680,
-          "regularGold": 0,
-          "limitedGold": 28000
+          "regularGold": 10500,
+          "limitedGold": 10500
         },
         {
           "type": "normal",
           "requiredGearScore": 1680,
-          "regularGold": 18600,
-          "limitedGold": 9400
+          "regularGold": 10500,
+          "limitedGold": 10500
         },
         {
           "type": "heroic",
           "requiredGearScore": 1700,
-          "regularGold": 26600,
-          "limitedGold": 11400
+          "regularGold": 13500,
+          "limitedGold": 13500
         }
       ]
     },
@@ -116,8 +116,8 @@
         {
           "type": "normal",
           "requiredGearScore": 1700,
-          "regularGold": 33000,
-          "limitedGold": 0
+          "regularGold": 16500,
+          "limitedGold": 16500
         },
         {
           "type": "heroic",
@@ -134,8 +134,8 @@
         {
           "type": "normal",
           "requiredGearScore": 1710,
-          "regularGold": 40000,
-          "limitedGold": 0
+          "regularGold": 20000,
+          "limitedGold": 20000
         },
         {
           "type": "heroic",
@@ -152,8 +152,8 @@
         {
           "type": "normal",
           "requiredGearScore": 1710,
-          "regularGold": 35000,
-          "limitedGold": 0
+          "regularGold": 17500,
+          "limitedGold": 17500
         },
         {
           "type": "heroic",
@@ -166,6 +166,30 @@
           "requiredGearScore": 1740,
           "regularGold": 54000,
           "limitedGold": 0
+        }
+      ]
+    },
+    {
+      "id": "horizon_cathedral",
+      "name": "Сакра-Финистриа",
+      "difficulties": [
+        {
+          "type": "normal",
+          "requiredGearScore": 1710,
+          "regularGold": 0,
+          "limitedGold": 30000
+        },
+        {
+          "type": "heroic",
+          "requiredGearScore": 1710,
+          "regularGold": 0,
+          "limitedGold": 40000
+        },
+        {
+          "type": "nightmare",
+          "requiredGearScore": 1710,
+          "regularGold": 0,
+          "limitedGold": 50000
         }
       ]
     }
