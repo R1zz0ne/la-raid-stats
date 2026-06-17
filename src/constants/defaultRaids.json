@@ -175,19 +175,19 @@
       "difficulties": [
         {
           "type": "normal",
-          "requiredGearScore": 1710,
+          "requiredGearScore": 1700,
           "regularGold": 0,
           "limitedGold": 30000
         },
         {
           "type": "heroic",
-          "requiredGearScore": 1710,
+          "requiredGearScore": 1720,
           "regularGold": 0,
           "limitedGold": 40000
         },
         {
           "type": "nightmare",
-          "requiredGearScore": 1710,
+          "requiredGearScore": 1750,
           "regularGold": 0,
           "limitedGold": 50000
         }
