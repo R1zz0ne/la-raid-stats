@@ -236,7 +236,7 @@ function handleResetAllRaids() {
   align-items: center;
   padding-top: var(--spacing-sm);
   padding-bottom: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .dashboard-view__header--sticky {

@@ -29,7 +29,7 @@ onMounted(() => {
 
 .app-main {
   flex: 1;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
 @media (max-width: 640px) {
